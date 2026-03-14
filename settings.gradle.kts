@@ -1,21 +1,12 @@
 rootProject.name = "Demo03"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
-val aliyunGoogle = "https://maven.aliyun.com/repository/google"
-val aliyunPublic = "https://maven.aliyun.com/repository/public"
-val aliyunGradlePlugin = "https://maven.aliyun.com/repository/gradle-plugin"
-
 pluginManagement {
     repositories {
-        maven(url = aliyunGoogle) {
-            mavenContent {
-                includeGroupAndSubgroups("androidx")
-                includeGroupAndSubgroups("com.android")
-                includeGroupAndSubgroups("com.google")
-            }
-        }
-        maven(url = aliyunPublic)
-        maven(url = aliyunGradlePlugin)
+        maven(url = "https://maven.pkg.jetbrains.space/public/p/compose/dev")
+        maven(url = "https://maven.aliyun.com/repository/google")
+        maven(url = "https://maven.aliyun.com/repository/public")
+        maven(url = "https://maven.aliyun.com/repository/gradle-plugin")
         google {
             mavenContent {
                 includeGroupAndSubgroups("androidx")
@@ -30,14 +21,9 @@ pluginManagement {
 
 dependencyResolutionManagement {
     repositories {
-        maven(url = aliyunGoogle) {
-            mavenContent {
-                includeGroupAndSubgroups("androidx")
-                includeGroupAndSubgroups("com.android")
-                includeGroupAndSubgroups("com.google")
-            }
-        }
-        maven(url = aliyunPublic)
+        maven(url = "https://maven.pkg.jetbrains.space/public/p/compose/dev")
+        maven(url = "https://maven.aliyun.com/repository/google")
+        maven(url = "https://maven.aliyun.com/repository/public")
         google {
             mavenContent {
                 includeGroupAndSubgroups("androidx")
@@ -53,4 +39,5 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
+include(":androidApp")
 include(":composeApp")
