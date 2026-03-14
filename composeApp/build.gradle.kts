@@ -12,6 +12,10 @@ plugins {
     alias(libs.plugins.ktorfit)
 }
 
+ktorfit {
+    compilerPluginVersion.set("2.3.3")
+}
+
 kotlin {
     android {
         namespace = "com.example.demo_03.shared"
@@ -74,10 +78,6 @@ kotlin {
             implementation(libs.kotlinx.coroutinesSwing)
         }
     }
-}
-
-dependencies {
-    add("kspCommonMainMetadata", libs.ktorfit.ksp)
 }
 
 compose.desktop {

@@ -5,7 +5,6 @@ pluginManagement {
     repositories {
         maven(url = "https://maven.pkg.jetbrains.space/public/p/compose/dev")
         maven(url = "https://maven.aliyun.com/repository/google")
-        maven(url = "https://maven.aliyun.com/repository/public")
         maven(url = "https://maven.aliyun.com/repository/gradle-plugin")
         google {
             mavenContent {
@@ -23,7 +22,6 @@ dependencyResolutionManagement {
     repositories {
         maven(url = "https://maven.pkg.jetbrains.space/public/p/compose/dev")
         maven(url = "https://maven.aliyun.com/repository/google")
-        maven(url = "https://maven.aliyun.com/repository/public")
         google {
             mavenContent {
                 includeGroupAndSubgroups("androidx")

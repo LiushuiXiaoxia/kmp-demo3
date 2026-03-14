@@ -8,4 +8,4 @@ script = ""
 [[actions]]
 name = "运行"
 icon = "run"
-command = "make android-build"
+command = "make android-build && make desktop-run"

@@ -22,7 +22,7 @@ val networkModule = module {
     single {
         HttpClient {
             install(ContentNegotiation) {
-                json(get())
+                json(get<Json>())
             }
             install(Logging) {
                 level = LogLevel.INFO
@@ -33,7 +33,7 @@ val networkModule = module {
     single {
         Ktorfit.Builder()
             .baseUrl("https://jsonplaceholder.typicode.com/")
-            .httpClient(get())
+            .httpClient(get<HttpClient>())
             .build()
     }
 
