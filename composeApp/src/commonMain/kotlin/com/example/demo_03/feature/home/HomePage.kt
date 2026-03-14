@@ -39,32 +39,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.demo_03.core.ScreenLifecycleLogger
-import com.example.demo_03.navigation.LocalAppNavController
-import com.example.demo_03.navigation.navigateToLogin
 import com.example.demo_03.session.SessionStore
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-import org.koin.core.parameter.parametersOf
 
 @Composable
 fun HomeRoute(initialTab: HomeTab) {
-    val navController = LocalAppNavController.current
     val sessionStore = koinInject<SessionStore>()
     val homeViewModel = koinViewModel<HomeViewModel>()
-    val feedViewModel = koinViewModel<FeedViewModel>()
-    val discoverViewModel = koinViewModel<DiscoverViewModel>()
-    val messagesViewModel = koinViewModel<MessagesViewModel>()
-    val profileViewModel = koinViewModel<ProfileViewModel>(
-        parameters = { parametersOf(navController::navigateToLogin) },
-    )
 
     val homeState by homeViewModel.state.collectAsState()
     val sessionState by sessionStore.session.collectAsState()
-    val feedState by feedViewModel.state.collectAsState()
-    val discoverState by discoverViewModel.state.collectAsState()
-    val messagesState by messagesViewModel.state.collectAsState()
-    val profileState by profileViewModel.state.collectAsState()
     val pagerState = rememberPagerState(
         initialPage = initialTab.ordinal,
         pageCount = { HomeTab.entries.size },
@@ -91,10 +77,6 @@ fun HomeRoute(initialTab: HomeTab) {
     HomePage(
         state = homeState,
         userName = sessionState.userName.ifBlank { "未登录用户" },
-        feedState = feedState,
-        discoverState = discoverState,
-        messagesState = messagesState,
-        profileState = profileState,
         pagerState = pagerState,
         onHomeIntent = { intent ->
             homeViewModel.onIntent(intent)
@@ -104,10 +86,6 @@ fun HomeRoute(initialTab: HomeTab) {
                 }
             }
         },
-        onFeedIntent = feedViewModel::onIntent,
-        onDiscoverIntent = discoverViewModel::onIntent,
-        onMessagesIntent = messagesViewModel::onIntent,
-        onProfileIntent = profileViewModel::onIntent,
     )
 }
 
@@ -115,16 +93,12 @@ fun HomeRoute(initialTab: HomeTab) {
 fun HomePage(
     state: HomeState,
     userName: String,
-    feedState: FeedState,
-    discoverState: DiscoverState,
-    messagesState: MessagesState,
-    profileState: ProfileState,
     pagerState: androidx.compose.foundation.pager.PagerState,
     onHomeIntent: (HomeIntent) -> Unit,
-    onFeedIntent: (FeedIntent) -> Unit,
-    onDiscoverIntent: (DiscoverIntent) -> Unit,
-    onMessagesIntent: (MessagesIntent) -> Unit,
-    onProfileIntent: (ProfileIntent) -> Unit,
+    feedContent: @Composable () -> Unit = { FeedRoute() },
+    discoverContent: @Composable () -> Unit = { DiscoverRoute() },
+    messagesContent: @Composable () -> Unit = { MessagesRoute() },
+    profileContent: @Composable (String) -> Unit = { ProfileRoute(userName = it) },
 ) {
     Surface(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -156,26 +130,13 @@ fun HomePage(
                     modifier = Modifier.fillMaxSize(),
                 ) { page ->
                     when (HomeTab.entries[page]) {
-                        HomeTab.Feed -> FeedPage(
-                            state = feedState,
-                            onIntent = onFeedIntent,
-                        )
+                        HomeTab.Feed -> feedContent()
 
-                        HomeTab.Discover -> DiscoverPage(
-                            state = discoverState,
-                            onIntent = onDiscoverIntent,
-                        )
+                        HomeTab.Discover -> discoverContent()
 
-                        HomeTab.Messages -> MessagesPage(
-                            state = messagesState,
-                            onIntent = onMessagesIntent,
-                        )
+                        HomeTab.Messages -> messagesContent()
 
-                        HomeTab.Profile -> ProfilePage(
-                            state = profileState,
-                            userName = userName,
-                            onIntent = onProfileIntent,
-                        )
+                        HomeTab.Profile -> profileContent(userName)
                     }
                 }
             }
@@ -268,19 +229,36 @@ private fun HomePagePreview() {
         HomePage(
             state = HomeState(selectedTab = HomeTab.Feed),
             userName = "demo",
-            feedState = FeedState(),
-            discoverState = DiscoverState(),
-            messagesState = MessagesState(),
-            profileState = ProfileState(),
             pagerState = rememberPagerState(
                 initialPage = HomeTab.Feed.ordinal,
                 pageCount = { HomeTab.entries.size },
             ),
             onHomeIntent = {},
-            onFeedIntent = {},
-            onDiscoverIntent = {},
-            onMessagesIntent = {},
-            onProfileIntent = {},
+            feedContent = {
+                FeedPage(
+                    state = FeedState(),
+                    onIntent = {},
+                )
+            },
+            discoverContent = {
+                DiscoverPage(
+                    state = DiscoverState(),
+                    onIntent = {},
+                )
+            },
+            messagesContent = {
+                MessagesPage(
+                    state = MessagesState(),
+                    onIntent = {},
+                )
+            },
+            profileContent = { previewUserName ->
+                ProfilePage(
+                    state = ProfileState(),
+                    userName = previewUserName,
+                    onIntent = {},
+                )
+            },
         )
     }
 }
