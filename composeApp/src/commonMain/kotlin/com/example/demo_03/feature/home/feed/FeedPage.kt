@@ -26,6 +26,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -228,5 +229,33 @@ fun FeedErrorCard(
         Button(onClick = onRetry) {
             Text("重新加载")
         }
+    }
+}
+
+@Preview
+@Composable
+private fun FeedPagePreview() {
+    MaterialTheme {
+        FeedPage(
+            state = FeedState(
+                posts = listOf(
+                    FeedPost(
+                        id = 1,
+                        title = "多端动态列表的交互优化",
+                        body = "支持下拉刷新、点击进入详情和滚动加载更多，预览里可以先验证列表卡片的层级和间距。",
+                        authorName = "作者 #3",
+                    ),
+                    FeedPost(
+                        id = 2,
+                        title = "网络状态统一收口",
+                        body = "请求成功、失败和 Toast 展示逻辑已经收敛到统一网络层，页面代码会轻很多。",
+                        authorName = "作者 #5",
+                    ),
+                ),
+                isLoadingMore = true,
+            ),
+            onIntent = {},
+            onPostClick = {},
+        )
     }
 }

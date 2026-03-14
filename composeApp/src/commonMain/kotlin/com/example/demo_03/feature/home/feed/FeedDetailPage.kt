@@ -20,8 +20,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
+import com.example.demo_03.data.FeedPost
 import com.example.demo_03.navigation.LocalAppNavController
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -36,24 +37,24 @@ fun FeedDetailRoute(postId: Int) {
     val state by viewModel.state.collectAsState()
 
     FeedDetailPage(
-        navController = navController,
         state = state,
         onIntent = viewModel::onIntent,
+        onBack = navController::popBackStack,
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FeedDetailPage(
-    navController: NavController,
     state: FeedDetailState,
     onIntent: (FeedDetailIntent) -> Unit,
+    onBack: () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
             title = { Text("动态详情") },
             navigationIcon = {
-                TextButton(onClick = { navController.popBackStack() }) {
+                TextButton(onClick = onBack) {
                     Text("返回")
                 }
             },
@@ -108,5 +109,24 @@ fun FeedDetailPage(
                 }
             }
         }
+    }
+}
+
+@Preview
+@Composable
+private fun FeedDetailPagePreview() {
+    MaterialTheme {
+        FeedDetailPage(
+            state = FeedDetailState(
+                post = FeedPost(
+                    id = 1,
+                    title = "跨端动态详情页面的设计打磨",
+                    body = "这是一段用于预览的详情内容，用来展示标题、作者信息和正文排版效果。支持多行文本，方便在 Compose Preview 里快速检查视觉层级。",
+                    authorName = "作者 #7",
+                ),
+            ),
+            onIntent = {},
+            onBack = {},
+        )
     }
 }
