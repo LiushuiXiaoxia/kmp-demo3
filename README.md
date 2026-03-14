@@ -109,6 +109,22 @@
 ./gradlew :androidApp:installDebug
 ```
 
+使用 `adb + uri` 启动应用：
+
+```bash
+adb shell am start \
+  -a android.intent.action.VIEW \
+  -d "demo03://app/login" \
+  com.example.demo_03
+```
+
+也可以直接验证其他 deeplink：
+
+```bash
+adb shell am start -a android.intent.action.VIEW -d "demo03://app/home/feed" com.example.demo_03
+adb shell am start -a android.intent.action.VIEW -d "demo03://app/home/profile" com.example.demo_03
+```
+
 ### Desktop
 
 直接运行桌面版：
@@ -132,6 +148,7 @@
 ## Deeplink 说明
 
 - Android 已在 `AndroidManifest.xml` 中注册 `demo03://app/...`
+- Android 可通过 `adb shell am start -a android.intent.action.VIEW -d "<uri>" com.example.demo_03` 触发 deeplink 启动
 - Desktop 支持两种方式处理 deeplink：
   - 启动参数传入 URI
   - 应用运行中通过 `Desktop.setOpenURIHandler()` 接收 URI

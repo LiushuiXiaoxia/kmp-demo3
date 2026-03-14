@@ -2,12 +2,9 @@ package com.example.demo_03.di
 
 import com.example.demo_03.data.PostRepository
 import com.example.demo_03.data.remote.PostApi
+import com.example.demo_03.data.remote.createPostApi
 import de.jensklingenberg.ktorfit.Ktorfit
 import io.ktor.client.HttpClient
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.plugins.logging.LogLevel
-import io.ktor.client.plugins.logging.Logging
-import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import org.koin.dsl.module
 
@@ -20,14 +17,7 @@ val networkModule = module {
     }
 
     single {
-        HttpClient {
-            install(ContentNegotiation) {
-                json(get<Json>())
-            }
-            install(Logging) {
-                level = LogLevel.INFO
-            }
-        }
+        createPlatformHttpClient(get<Json>())
     }
 
     single {
@@ -41,7 +31,7 @@ val networkModule = module {
     // val postRepository = get<PostRepository>()
     // val title = postRepository.getFeaturedPostTitle()
     single<PostApi> {
-        get<Ktorfit>().create()
+        get<Ktorfit>().createPostApi()
     }
 
     single {
