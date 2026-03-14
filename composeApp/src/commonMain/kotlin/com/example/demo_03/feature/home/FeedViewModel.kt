@@ -4,6 +4,7 @@ import com.example.demo_03.data.PostRepository
 import com.example.demo_03.core.MviViewModel
 import com.example.demo_03.core.logLifecycle
 import com.example.demo_03.getPlatform
+import com.example.demo_03.toast.ToastKit
 
 data class FeedState(
     val title: String = "今天的重点",
@@ -43,6 +44,7 @@ class FeedViewModel(
                         errorMessage = null,
                     )
                 }
+                ToastKit.show("刷新成功")
             }.onFailure { throwable ->
                 setState {
                     copy(
@@ -50,6 +52,7 @@ class FeedViewModel(
                         errorMessage = throwable.message ?: "请求失败",
                     )
                 }
+                ToastKit.show("刷新失败")
             }
         }
     }
