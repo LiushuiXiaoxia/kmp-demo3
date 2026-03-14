@@ -13,7 +13,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
 import com.example.demo_03.core.initLogger
 import com.example.demo_03.di.appModule
 import com.example.demo_03.feature.home.HomeRoute
@@ -28,7 +27,6 @@ private enum class AppRoute {
 }
 
 @Composable
-@Preview
 fun App() {
     KoinApplication(
         application = {

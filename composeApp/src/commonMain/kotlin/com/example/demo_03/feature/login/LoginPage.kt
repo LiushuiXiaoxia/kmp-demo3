@@ -20,6 +20,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
 import com.example.demo_03.core.ScreenLifecycleLogger
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
@@ -106,5 +107,16 @@ fun LoginPage(
                 }
             }
         }
+    }
+}
+
+@Preview
+@Composable
+private fun LoginPagePreview() {
+    MaterialTheme {
+        LoginPage(
+            state = LoginState(),
+            onIntent = {},
+        )
     }
 }

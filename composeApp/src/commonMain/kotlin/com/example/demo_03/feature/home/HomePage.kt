@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.demo_03.core.ScreenLifecycleLogger
 import com.example.demo_03.session.SessionStore
@@ -179,5 +180,25 @@ private fun HomeHeader(
                 style = MaterialTheme.typography.bodyLarge,
             )
         }
+    }
+}
+
+@Preview
+@Composable
+private fun HomePagePreview() {
+    MaterialTheme {
+        HomePage(
+            state = HomeState(selectedTab = HomeTab.Feed),
+            userName = "demo",
+            feedState = FeedState(),
+            discoverState = DiscoverState(),
+            messagesState = MessagesState(),
+            profileState = ProfileState(),
+            onHomeIntent = {},
+            onFeedIntent = {},
+            onDiscoverIntent = {},
+            onMessagesIntent = {},
+            onProfileIntent = {},
+        )
     }
 }

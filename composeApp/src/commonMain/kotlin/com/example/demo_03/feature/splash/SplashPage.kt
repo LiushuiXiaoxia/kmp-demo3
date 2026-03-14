@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.tooling.preview.Preview
 import com.example.demo_03.core.ScreenLifecycleLogger
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
@@ -91,5 +92,18 @@ fun SplashPage(state: SplashState) {
                 )
             }
         }
+    }
+}
+
+@Preview
+@Composable
+private fun SplashPagePreview() {
+    MaterialTheme {
+        SplashPage(
+            state = SplashState(
+                title = "Demo03",
+                subtitle = "Checking session...",
+            )
+        )
     }
 }
