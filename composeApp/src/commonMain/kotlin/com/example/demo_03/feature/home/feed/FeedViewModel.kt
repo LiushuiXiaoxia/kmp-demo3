@@ -1,6 +1,7 @@
 package com.example.demo_03.feature.home.feed
 
 import com.example.demo_03.data.PostRepository
+import com.example.demo_03.data.remote.NetworkResult
 import com.example.demo_03.core.MviViewModel
 import com.example.demo_03.core.logLifecycle
 import com.example.demo_03.getPlatform
@@ -34,25 +35,27 @@ class FeedViewModel(
         logLifecycle("Feed", "refresh")
         launch {
             setState { copy(isLoading = true, errorMessage = null) }
-            runCatching {
-                postRepository.getFeaturedPostTitle()
-            }.onSuccess { title ->
-                setState {
-                    copy(
-                        summary = "来自网络的标题: $title\n当前平台: ${getPlatform().name}",
-                        isLoading = false,
-                        errorMessage = null,
-                    )
+            when (val result = postRepository.getFeaturedPostTitle()) {
+                is NetworkResult.Success -> {
+                    setState {
+                        copy(
+                            summary = "来自网络的标题: ${result.data}\n当前平台: ${getPlatform().name}",
+                            isLoading = false,
+                            errorMessage = null,
+                        )
+                    }
+                    ToastKit.show("刷新成功")
                 }
-                ToastKit.show("刷新成功")
-            }.onFailure { throwable ->
-                setState {
-                    copy(
-                        isLoading = false,
-                        errorMessage = throwable.message ?: "请求失败",
-                    )
+
+                is NetworkResult.Error -> {
+                    setState {
+                        copy(
+                            isLoading = false,
+                            errorMessage = result.cause.message,
+                        )
+                    }
+                    ToastKit.show(result.cause.message)
                 }
-                ToastKit.show("刷新失败")
             }
         }
     }
