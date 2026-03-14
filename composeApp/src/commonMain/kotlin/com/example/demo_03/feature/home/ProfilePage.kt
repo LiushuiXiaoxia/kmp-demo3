@@ -1,0 +1,42 @@
+package com.example.demo_03.feature.home
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import com.example.demo_03.core.ScreenLifecycleLogger
+
+@Composable
+fun ProfilePage(
+    state: ProfileState,
+    userName: String,
+    onIntent: (ProfileIntent) -> Unit,
+) {
+    ScreenLifecycleLogger("Profile")
+    PageCard(
+        title = "我的",
+        actionText = "退出登录",
+        onAction = { onIntent(ProfileIntent.Logout) },
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column {
+                Text(userName, fontWeight = FontWeight.Bold)
+                Text("通知开关")
+            }
+            Switch(
+                checked = state.notificationsEnabled,
+                onCheckedChange = { onIntent(ProfileIntent.ToggleNotifications) },
+            )
+        }
+    }
+}

@@ -23,38 +23,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.demo_03.core.MviViewModel
 import com.example.demo_03.core.ScreenLifecycleLogger
-import com.example.demo_03.core.logLifecycle
 import com.example.demo_03.session.SessionStore
-import kotlinx.coroutines.delay
-
-data class SplashState(
-    val title: String = "Demo03",
-    val subtitle: String = "Initializing workspace...",
-)
-
-sealed interface SplashIntent {
-    data object Start : SplashIntent
-}
-
-private class SplashViewModel(
-    private val sessionStore: SessionStore,
-    private val onResolved: (Boolean) -> Unit,
-) : MviViewModel<SplashState, SplashIntent>(SplashState()) {
-    private var started = false
-
-    override fun handleIntent(intent: SplashIntent) {
-        if (intent is SplashIntent.Start && !started) {
-            started = true
-            logLifecycle("Splash", "checking session")
-            launch {
-                delay(1200)
-                onResolved(sessionStore.session.value.isLoggedIn)
-            }
-        }
-    }
-}
 
 @Composable
 fun SplashRoute(
@@ -78,11 +48,11 @@ fun SplashRoute(
         }
     }
 
-    SplashScreen(state)
+    SplashPage(state)
 }
 
 @Composable
-private fun SplashScreen(state: SplashState) {
+fun SplashPage(state: SplashState) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
