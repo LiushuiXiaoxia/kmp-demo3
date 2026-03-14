@@ -1,8 +1,8 @@
 package com.example.demo_03.core
 
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,8 +12,7 @@ import kotlinx.coroutines.launch
 
 abstract class MviViewModel<S, I>(
     initialState: S,
-) {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+) : ViewModel() {
     private val _state = MutableStateFlow(initialState)
 
     val state: StateFlow<S> = _state.asStateFlow()
@@ -27,11 +26,11 @@ abstract class MviViewModel<S, I>(
     }
 
     protected fun launch(block: suspend CoroutineScope.() -> Unit) {
-        scope.launch(block = block)
+        viewModelScope.launch(block = block)
     }
 
     fun clear() {
-        scope.cancel()
+        viewModelScope.coroutineContext.cancel()
     }
 
     protected abstract fun handleIntent(intent: I)

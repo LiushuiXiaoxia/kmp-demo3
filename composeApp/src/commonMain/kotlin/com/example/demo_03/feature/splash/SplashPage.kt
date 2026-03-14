@@ -11,7 +11,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -24,14 +23,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.demo_03.core.ScreenLifecycleLogger
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
 @Composable
 fun SplashRoute(
     onResolved: (Boolean) -> Unit,
 ) {
-    val viewModel = koinInject<SplashViewModel>(
+    val viewModel = koinViewModel<SplashViewModel>(
         parameters = { parametersOf(onResolved) },
     )
     val state by viewModel.state.collectAsState()
@@ -40,12 +39,6 @@ fun SplashRoute(
 
     LaunchedEffect(viewModel) {
         viewModel.onIntent(SplashIntent.Start)
-    }
-
-    DisposableEffect(viewModel) {
-        onDispose {
-            viewModel.clear()
-        }
     }
 
     SplashPage(state)

@@ -16,7 +16,6 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -28,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import com.example.demo_03.core.ScreenLifecycleLogger
 import com.example.demo_03.session.SessionStore
 import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
 @Composable
@@ -35,11 +35,11 @@ fun HomeRoute(
     onLogout: () -> Unit,
 ) {
     val sessionStore = koinInject<SessionStore>()
-    val homeViewModel = koinInject<HomeViewModel>()
-    val feedViewModel = koinInject<FeedViewModel>()
-    val discoverViewModel = koinInject<DiscoverViewModel>()
-    val messagesViewModel = koinInject<MessagesViewModel>()
-    val profileViewModel = koinInject<ProfileViewModel>(
+    val homeViewModel = koinViewModel<HomeViewModel>()
+    val feedViewModel = koinViewModel<FeedViewModel>()
+    val discoverViewModel = koinViewModel<DiscoverViewModel>()
+    val messagesViewModel = koinViewModel<MessagesViewModel>()
+    val profileViewModel = koinViewModel<ProfileViewModel>(
         parameters = { parametersOf(onLogout) },
     )
 
@@ -51,22 +51,6 @@ fun HomeRoute(
     val profileState by profileViewModel.state.collectAsState()
 
     ScreenLifecycleLogger("Home")
-
-    DisposableEffect(
-        homeViewModel,
-        feedViewModel,
-        discoverViewModel,
-        messagesViewModel,
-        profileViewModel,
-    ) {
-        onDispose {
-            homeViewModel.clear()
-            feedViewModel.clear()
-            discoverViewModel.clear()
-            messagesViewModel.clear()
-            profileViewModel.clear()
-        }
-    }
 
     HomePage(
         state = homeState,

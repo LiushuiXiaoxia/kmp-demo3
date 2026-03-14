@@ -14,7 +14,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -22,25 +21,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.demo_03.core.ScreenLifecycleLogger
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
 @Composable
 fun LoginRoute(
     onLoginSuccess: () -> Unit,
 ) {
-    val viewModel = koinInject<LoginViewModel>(
+    val viewModel = koinViewModel<LoginViewModel>(
         parameters = { parametersOf(onLoginSuccess) },
     )
     val state by viewModel.state.collectAsState()
 
     ScreenLifecycleLogger("Login")
-
-    DisposableEffect(viewModel) {
-        onDispose {
-            viewModel.clear()
-        }
-    }
 
     LoginPage(
         state = state,

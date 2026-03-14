@@ -8,31 +8,33 @@ import com.example.demo_03.feature.home.ProfileViewModel
 import com.example.demo_03.feature.login.LoginViewModel
 import com.example.demo_03.feature.splash.SplashViewModel
 import com.example.demo_03.session.SessionStore
+import org.koin.core.module.dsl.viewModel
+import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
 val appModule = module {
     single { SessionStore() }
 
-    factory { HomeViewModel() }
-    factory { FeedViewModel() }
-    factory { DiscoverViewModel() }
-    factory { MessagesViewModel() }
+    viewModelOf(::HomeViewModel)
+    viewModelOf(::FeedViewModel)
+    viewModelOf(::DiscoverViewModel)
+    viewModelOf(::MessagesViewModel)
 
-    factory { (onLogout: () -> Unit) ->
+    viewModel { (onLogout: () -> Unit) ->
         ProfileViewModel(
             sessionStore = get(),
             onLogout = onLogout,
         )
     }
 
-    factory { (onLoginSuccess: () -> Unit) ->
+    viewModel { (onLoginSuccess: () -> Unit) ->
         LoginViewModel(
             sessionStore = get(),
             onLoginSuccess = onLoginSuccess,
         )
     }
 
-    factory { (onResolved: (Boolean) -> Unit) ->
+    viewModel { (onResolved: (Boolean) -> Unit) ->
         SplashViewModel(
             sessionStore = get(),
             onResolved = onResolved,

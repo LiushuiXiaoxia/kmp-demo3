@@ -48,12 +48,14 @@ kotlin {
             implementation(libs.compose.ui)
             implementation(libs.compose.components.resources)
             implementation(libs.compose.uiToolingPreview)
+            implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.kotlinx.coroutinesCore)
             implementation(libs.napier)
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
+            implementation(libs.koin.composeViewModel)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

@@ -15,7 +15,7 @@ fun initLogger() {
 }
 
 fun logLifecycle(screenName: String, event: String) {
-    Napier.d(message = event, tag = screenName)
+    Napier.d(message = "$screenName-$event", tag = "Lifecycle")
 }
 
 @Composable
