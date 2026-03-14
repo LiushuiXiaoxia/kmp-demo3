@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.demo_03.navigation.handleExternalDeepLink
 
@@ -14,7 +15,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            App()
+            App(
+                appContext = AppContext(
+                    platformContext = PlatformContext(applicationContext),
+                ),
+            )
         }
 
         handleExternalDeepLink(intent?.dataString)
@@ -30,5 +35,9 @@ class MainActivity : ComponentActivity() {
 @Preview
 @Composable
 fun AppAndroidPreview() {
-    App()
+    App(
+        appContext = AppContext(
+            platformContext = PlatformContext(LocalContext.current.applicationContext),
+        ),
+    )
 }

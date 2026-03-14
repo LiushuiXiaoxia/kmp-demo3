@@ -14,39 +14,28 @@ import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
-import com.example.demo_03.core.initLogger
-import com.example.demo_03.di.initKoin
-import com.example.demo_03.feature.home.HomeTab
-import com.example.demo_03.feature.home.HomeRoute
-import com.example.demo_03.feature.login.LoginRoute
-import com.example.demo_03.feature.splash.SplashRoute
-import com.example.demo_03.navigation.AppRoute
-import com.example.demo_03.navigation.DeepLinkRegistry
-import com.example.demo_03.navigation.DeepLinkBus
-import com.example.demo_03.navigation.LocalAppNavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
+import androidx.savedstate.read
+import com.example.demo_03.core.initLogger
+import com.example.demo_03.di.initKoin
+import com.example.demo_03.feature.home.HomeRoute
+import com.example.demo_03.feature.home.HomeTab
+import com.example.demo_03.feature.login.LoginRoute
+import com.example.demo_03.feature.splash.SplashRoute
+import com.example.demo_03.navigation.AppRoute
+import com.example.demo_03.navigation.DeepLinkBus
+import com.example.demo_03.navigation.DeepLinkRegistry
+import com.example.demo_03.navigation.LocalAppNavController
 
 @Composable
-fun App() {
+fun App(appContext: AppContext) {
     initKoin()
     val navController = rememberNavController()
 
-    AppInitializer(navController)
-    CompositionLocalProvider(
-        LocalAppNavController provides navController,
-    ) {
-        AppContainer {
-            AppNavHost(navController)
-        }
-    }
-}
-
-@Composable
-private fun AppInitializer(navController: NavHostController) {
     LaunchedEffect(Unit) {
         initLogger()
     }
@@ -59,7 +48,17 @@ private fun AppInitializer(navController: NavHostController) {
             }
         }
     }
+
+    CompositionLocalProvider(
+        LocalAppContext provides appContext,
+        LocalAppNavController provides navController,
+    ) {
+        AppContainer {
+            AppNavHost(navController)
+        }
+    }
 }
+
 
 @Composable
 private fun AppContainer(content: @Composable () -> Unit) {
@@ -137,7 +136,7 @@ private fun NavGraphBuilder.homeDestination(
         ),
     ) { backStackEntry ->
         val selectedTab = HomeTab.fromRoute(
-            backStackEntry.arguments?.getString(AppRoute.Home.TabArg),
+            backStackEntry.arguments?.read { getString(AppRoute.Home.TabArg) },
         )
         HomeRoute(initialTab = selectedTab)
     }

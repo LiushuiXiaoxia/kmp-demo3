@@ -13,7 +13,11 @@ fun main(args: Array<String>) = application {
         onCloseRequest = ::exitApplication,
         title = "Demo03",
     ) {
-        App()
+        App(
+            appContext = AppContext(
+                platformContext = PlatformContext(args.toList()),
+            ),
+        )
     }
 }
 
