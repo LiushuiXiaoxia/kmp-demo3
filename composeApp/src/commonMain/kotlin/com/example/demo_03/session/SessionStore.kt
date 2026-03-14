@@ -1,5 +1,6 @@
 package com.example.demo_03.session
 
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,6 +16,7 @@ class SessionStore {
     val session: StateFlow<SessionState> = _session.asStateFlow()
 
     fun login(userName: String) {
+        Napier.i(message = "login: $userName", tag = "SessionStore")
         _session.update {
             it.copy(
                 isLoggedIn = true,
@@ -24,6 +26,7 @@ class SessionStore {
     }
 
     fun logout() {
+        Napier.i(message = "logout", tag = "SessionStore")
         _session.value = SessionState()
     }
 }
