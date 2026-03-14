@@ -17,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,17 +48,27 @@ import com.example.demo_03.navigation.AppRoute
 import com.example.demo_03.navigation.DeepLinkBus
 import com.example.demo_03.navigation.DeepLinkRegistry
 import com.example.demo_03.navigation.LocalAppNavController
+import com.example.demo_03.navigation.PendingNavigation
+import com.example.demo_03.navigation.requiresAuth
+import com.example.demo_03.observability.AnalyticsEvent
+import com.example.demo_03.observability.AnalyticsTracker
+import com.example.demo_03.session.SessionStore
 import com.example.demo_03.toast.ToastKit
 import kotlinx.coroutines.delay
+import org.koin.compose.koinInject
 
 @Composable
 fun App(appContext: AppContext) {
     initKoin(appContext)
+    val appConfig = koinInject<com.example.demo_03.config.AppConfig>()
+    val analyticsTracker = koinInject<AnalyticsTracker>()
+    val sessionStore = koinInject<SessionStore>()
     val navController = rememberNavController()
     var toastMessage by remember { mutableStateOf<String?>(null) }
+    val sessionState by sessionStore.session.collectAsState()
 
     LaunchedEffect(Unit) {
-        initLogger()
+        initLogger(appConfig)
     }
 
     LaunchedEffect(Unit) {
@@ -70,11 +81,25 @@ fun App(appContext: AppContext) {
         }
     }
 
-    LaunchedEffect(navController) {
+    LaunchedEffect(navController, sessionState.isLoggedIn) {
         DeepLinkBus.links.collect { url ->
             val route = AppRoute.fromDeepLink(url) ?: return@collect
-            navController.navigate(route.route) {
-                launchSingleTop = true
+            analyticsTracker.track(
+                AnalyticsEvent(
+                    name = "deeplink_opened",
+                    properties = mapOf("route" to route.route),
+                ),
+            )
+            if (route.requiresAuth && !sessionState.isLoggedIn) {
+                PendingNavigation.store(route)
+                navController.navigate(AppRoute.Login.route) {
+                    launchSingleTop = true
+                }
+            } else {
+                PendingNavigation.clear()
+                navController.navigate(route.route) {
+                    launchSingleTop = true
+                }
             }
         }
     }
@@ -161,6 +186,7 @@ private fun NavGraphBuilder.splashDestination() {
             navDeepLink { uriPattern = DeepLinkRegistry.HomeDiscover },
             navDeepLink { uriPattern = DeepLinkRegistry.HomeMessages },
             navDeepLink { uriPattern = DeepLinkRegistry.HomeProfile },
+            navDeepLink { uriPattern = DeepLinkRegistry.FeedDetail },
             navDeepLink { uriPattern = DeepLinkRegistry.Login },
         ),
     ) {
@@ -210,6 +236,9 @@ private fun NavGraphBuilder.feedDetailDestination() {
             navArgument(AppRoute.FeedDetail.PostIdArg) {
                 type = NavType.IntType
             },
+        ),
+        deepLinks = listOf(
+            navDeepLink { uriPattern = DeepLinkRegistry.FeedDetail },
         ),
     ) { backStackEntry ->
         val postId = backStackEntry.arguments?.read {

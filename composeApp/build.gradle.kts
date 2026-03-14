@@ -42,9 +42,9 @@ kotlin {
             isStatic = true
         }
     }
-    
+
     jvm()
-    
+
     sourceSets {
         androidMain {
             dependencies {
@@ -88,6 +88,7 @@ kotlin {
         commonTest {
             dependencies {
                 implementation(libs.kotlin.test)
+                implementation(libs.kotlinx.coroutinesTest)
             }
         }
         jvmMain {

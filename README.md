@@ -1,6 +1,6 @@
 # Demo03
 
-`Demo03` 是一个基于 Kotlin Multiplatform 和 Compose Multiplatform 的多端示例工程，当前目标平台包括 Android、iOS 和 Desktop(JVM)。项目采用共享 UI + 平台宿主的结构，主要用于演示基础登录流、Tab 导航、会话状态管理以及 deeplink 接入。
+`Demo03` 是一个基于 Kotlin Multiplatform 和 Compose Multiplatform 的多端示例工程，当前目标平台包括 Android、iOS 和 Desktop(JVM)。项目采用共享 UI + 平台宿主的结构，目前已经具备会话持久化、内容缓存回退、统一网络配置、共享层测试和基础工程校验链路。
 
 ## 项目概览
 
@@ -22,16 +22,19 @@
   - `Discover`
   - `Messages`
   - `Profile`
-- 基于 `SessionStore` 的内存会话状态
+- 基于平台存储的会话持久化与启动恢复
 - 基于 `androidx.navigation` 的页面导航
 - 基于 `Koin` 的依赖注入
 - 基于 `Napier` 的日志初始化与页面生命周期日志
+- 基于本地缓存的 Feed / Detail 回退展示
+- 基于 `TODO.md`、`verify` 与 GitHub Actions 的基础工程化校验
 - Deeplink 路由：
   - `demo03://app/login`
   - `demo03://app/home/feed`
   - `demo03://app/home/discover`
   - `demo03://app/home/messages`
   - `demo03://app/home/profile`
+  - `demo03://app/feed/detail/{id}`
 
 ## 技术栈
 
@@ -83,7 +86,9 @@
 - `androidApp` 和 `iosApp` 负责平台入口
 - `composeApp` 承担主要业务逻辑和 Compose 页面
 - 页面状态通过自定义 `MviViewModel<S, I>` 管理
-- `SessionStore` 维护登录态
+- `SessionStore` 维护登录态并同步持久化存储
+- `AppConfig` 统一管理环境和网络参数
+- `PostRepository` 通过远端数据源 + 本地缓存数据源提供内容
 - `AppRoute` 统一描述路由与 deeplink 映射
 - `initKoin()` 在应用启动时初始化依赖容器
 
@@ -145,6 +150,21 @@ adb shell am start -a android.intent.action.VIEW -d "demo03://app/home/profile" 
 
 在 Xcode 中打开 [`iosApp`](/Users/leon/ws/kmm/demo03/iosApp)，运行 `iosApp` target。
 
+### Shared Checks
+
+运行共享层测试：
+
+```bash
+./gradlew :composeApp:allTests
+```
+
+运行统一校验：
+
+```bash
+./gradlew verify
+make verify
+```
+
 ## Deeplink 说明
 
 - Android 已在 `AndroidManifest.xml` 中注册 `demo03://app/...`
@@ -152,6 +172,7 @@ adb shell am start -a android.intent.action.VIEW -d "demo03://app/home/profile" 
 - Desktop 支持两种方式处理 deeplink：
   - 启动参数传入 URI
   - 应用运行中通过 `Desktop.setOpenURIHandler()` 接收 URI
+- 受保护 deeplink 在未登录时会先进入 `Login`，登录成功后自动回跳目标页面
 - Desktop 平台的 scheme 注册方式见 [`docs/desktop-deeplink.md`](/Users/leon/ws/kmm/demo03/docs/desktop-deeplink.md)
 
 示例：
@@ -167,42 +188,18 @@ open "demo03://app/home/profile"
 - 已配置 JetBrains Compose 仓库
 - 已配置阿里云 Maven 镜像
 - Gradle 已开启 configuration cache 与 build cache
+- 根目录 [`TODO.md`](/Users/leon/ws/kmm/demo03/TODO.md) 用于维护阶段性任务状态
+- GitHub Actions 已提供最小 CI：`verify`
 
-## Ktor / Ktorfit 接入示例
+## 当前限制
 
-项目已在共享模块中接入 `Ktor + Ktorfit + Koin`，示例代码位于：
-
-- [`NetworkModule.kt`](/Users/leon/ws/kmm/demo03/composeApp/src/commonMain/kotlin/com/example/demo_03/di/NetworkModule.kt)
-- [`PostApi.kt`](/Users/leon/ws/kmm/demo03/composeApp/src/commonMain/kotlin/com/example/demo_03/data/remote/PostApi.kt)
-- [`PostRepository.kt`](/Users/leon/ws/kmm/demo03/composeApp/src/commonMain/kotlin/com/example/demo_03/data/PostRepository.kt)
-
-最小 Koin 注入示例：
-
-```kotlin
-val networkModule = module {
-    single {
-        HttpClient {
-            install(ContentNegotiation) {
-                json(get())
-            }
-        }
-    }
-
-    single {
-        Ktorfit.Builder()
-            .baseUrl("https://jsonplaceholder.typicode.com/")
-            .httpClient(get())
-            .build()
-    }
-
-    single<PostApi> { get<Ktorfit>().create() }
-    single { PostRepository(postApi = get()) }
-}
-```
+- 当前仍使用 `jsonplaceholder` 作为演示数据源
+- `verify` 已覆盖共享层格式约束、编译和测试，但尚未包含发布签名与商店上架流程
+- iOS / Desktop 的正式发布脚本仍需按目标环境继续补齐
 
 ## 后续可扩展方向
 
-- 接入持久化存储，替换当前内存登录态
-- 补充网络层与真实数据源
-- 为 Android/iOS/Desktop 补充统一的 deeplink 验证
-- 增加单元测试和 UI 测试
+- 接入真实账号系统与 token 安全存储
+- 将轻量缓存升级为更强的数据层方案
+- 扩展埋点、崩溃上报和性能监控实现
+- 为 Android/iOS/Desktop 补充更完整的 UI 自动化测试

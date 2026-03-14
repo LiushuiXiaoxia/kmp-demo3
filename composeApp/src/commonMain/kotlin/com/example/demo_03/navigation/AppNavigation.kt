@@ -36,7 +36,7 @@ sealed class AppRoute(val route: String) {
                 "home/discover" -> Home(HomeTab.Discover)
                 "home/messages" -> Home(HomeTab.Messages)
                 "home/profile" -> Home(HomeTab.Profile)
-                else -> null
+                else -> normalized.parseFeedDetailRoute()
             }
         }
     }
@@ -48,7 +48,11 @@ object DeepLinkRegistry {
     const val HomeDiscover = "demo03://app/home/discover"
     const val HomeMessages = "demo03://app/home/messages"
     const val HomeProfile = "demo03://app/home/profile"
+    const val FeedDetail = "demo03://app/feed/detail/{postId}"
 }
+
+val AppRoute.requiresAuth: Boolean
+    get() = this !is AppRoute.Login && this !is AppRoute.Splash
 
 val LocalAppNavController = compositionLocalOf<NavHostController> {
     error("LocalAppNavController has not been provided")
@@ -84,4 +88,13 @@ fun NavHostController.navigateToLogin() {
             inclusive = true
         }
     }
+}
+
+private fun String.parseFeedDetailRoute(): AppRoute? {
+    val segments = split("/")
+    if (segments.size == 3 && segments[0] == "feed" && segments[1] == "detail") {
+        val postId = segments[2].toIntOrNull() ?: return null
+        return AppRoute.FeedDetail(postId)
+    }
+    return null
 }

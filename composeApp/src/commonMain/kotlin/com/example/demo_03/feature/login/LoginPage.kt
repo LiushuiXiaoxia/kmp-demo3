@@ -24,6 +24,7 @@ import com.example.demo_03.core.ScreenLifecycleLogger
 import com.example.demo_03.feature.home.HomeTab
 import com.example.demo_03.navigation.AppRoute
 import com.example.demo_03.navigation.LocalAppNavController
+import com.example.demo_03.navigation.PendingNavigation
 import com.example.demo_03.navigation.navigateReplacingLogin
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -35,7 +36,9 @@ fun LoginRoute() {
         parameters = {
             parametersOf(
                 {
-                    navController.navigateReplacingLogin(AppRoute.Home(HomeTab.Feed))
+                    navController.navigateReplacingLogin(
+                        PendingNavigation.consume() ?: AppRoute.Home(HomeTab.Feed),
+                    )
                 },
             )
         },

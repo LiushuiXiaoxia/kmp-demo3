@@ -1,5 +1,6 @@
 package com.example.demo_03.di
 
+import com.example.demo_03.config.NetworkConfig
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.darwin.Darwin
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -9,19 +10,22 @@ import io.ktor.client.plugins.logging.Logging
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
-actual fun createPlatformHttpClient(json: Json): HttpClient {
+actual fun createPlatformHttpClient(
+    json: Json,
+    networkConfig: NetworkConfig,
+): HttpClient {
     return HttpClient(Darwin) {
         expectSuccess = true
         install(HttpTimeout) {
-            requestTimeoutMillis = 15_000
-            connectTimeoutMillis = 15_000
-            socketTimeoutMillis = 15_000
+            requestTimeoutMillis = networkConfig.requestTimeoutMillis
+            connectTimeoutMillis = networkConfig.requestTimeoutMillis
+            socketTimeoutMillis = networkConfig.requestTimeoutMillis
         }
         install(ContentNegotiation) {
             json(json)
         }
         install(Logging) {
-            level = LogLevel.INFO
+            level = if (networkConfig.enableHttpLogs) LogLevel.INFO else LogLevel.NONE
         }
     }
 }

@@ -116,6 +116,15 @@ fun FeedPage(
                     )
                 }
 
+                if (state.statusMessage != null) {
+                    item {
+                        FeedStatusCard(
+                            message = state.statusMessage,
+                            isCached = state.isShowingCachedContent,
+                        )
+                    }
+                }
+
                 if (state.posts.isEmpty() && state.isRefreshing) {
                     item {
                         Box(
@@ -139,8 +148,8 @@ fun FeedPage(
 
                     items(
                         items = state.posts,
-                        key = { it.id },
-                    ) { post ->
+                        key = { post: FeedPost -> post.id },
+                    ) { post: FeedPost ->
                         FeedPostCard(
                             post = post,
                             onClick = { onPostClick(post) },
@@ -156,6 +165,25 @@ fun FeedPage(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun FeedStatusCard(
+    message: String,
+    isCached: Boolean,
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = if (isCached) Color(0xFFFFF7E8) else Color(0xFFEFF8F1),
+        shape = RoundedCornerShape(20.dp),
+    ) {
+        Text(
+            text = message,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            color = if (isCached) Color(0xFF795106) else Color(0xFF235A33),
+            style = MaterialTheme.typography.bodyMedium,
+        )
     }
 }
 

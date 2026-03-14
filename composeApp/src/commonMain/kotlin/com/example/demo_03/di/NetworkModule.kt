@@ -1,9 +1,7 @@
 package com.example.demo_03.di
 
-import com.example.demo_03.data.PostRepository
-import com.example.demo_03.data.remote.PostApi
-import com.example.demo_03.data.remote.createPostApi
-import de.jensklingenberg.ktorfit.Ktorfit
+import com.example.demo_03.data.remote.HttpPostRemoteDataSource
+import com.example.demo_03.data.remote.PostRemoteDataSource
 import io.ktor.client.HttpClient
 import kotlinx.serialization.json.Json
 import org.koin.dsl.module
@@ -17,27 +15,16 @@ val networkModule = module {
     }
 
     single {
-        createPlatformHttpClient(get<Json>())
+        createPlatformHttpClient(
+            json = get(),
+            networkConfig = get(),
+        )
     }
 
-    single {
-        Ktorfit.Builder()
-            .baseUrl("https://jsonplaceholder.typicode.com/")
-            .httpClient(get<HttpClient>())
-            .build()
-    }
-
-    // Simple Koin sample:
-    // val postRepository = get<PostRepository>()
-    // val title = postRepository.getFeaturedPostTitle()
-    single<PostApi> {
-        get<Ktorfit>().createPostApi()
-    }
-
-    single {
-        PostRepository(
-            postApi = get(),
+    single<PostRemoteDataSource> {
+        HttpPostRemoteDataSource(
             httpClient = get(),
+            networkConfig = get(),
         )
     }
 }

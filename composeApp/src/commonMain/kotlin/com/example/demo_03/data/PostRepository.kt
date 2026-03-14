@@ -1,16 +1,18 @@
 package com.example.demo_03.data
 
+import com.example.demo_03.data.local.PostLocalDataSource
 import com.example.demo_03.data.remote.BusinessFailure
 import com.example.demo_03.data.remote.NetworkResult
-import com.example.demo_03.data.remote.PostApi
 import com.example.demo_03.data.remote.PostDto
+import com.example.demo_03.data.remote.PostRemoteDataSource
 import com.example.demo_03.data.remote.mapSuccess
 import com.example.demo_03.data.remote.safeApiCall
-import io.ktor.client.HttpClient
-import io.ktor.client.call.body
-import io.ktor.client.request.get
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class FeedPost(
     val id: Int,
     val title: String,
@@ -18,48 +20,92 @@ data class FeedPost(
     val authorName: String,
 )
 
-class PostRepository(
-    private val postApi: PostApi,
-    private val httpClient: HttpClient,
-) {
-    fun getFeaturedPostTitle(): Flow<NetworkResult<String>> {
+data class CachedResource<T>(
+    val data: T,
+    val isFromCache: Boolean,
+)
+
+interface PostRepository {
+    fun getFeaturedPostTitle(): Flow<NetworkResult<String>>
+    fun getPosts(page: Int, pageSize: Int): Flow<NetworkResult<CachedResource<List<FeedPost>>>>
+    fun getPostDetail(id: Int): Flow<NetworkResult<CachedResource<FeedPost>>>
+}
+
+class DefaultPostRepository(
+    private val postRemoteDataSource: PostRemoteDataSource,
+    private val postLocalDataSource: PostLocalDataSource,
+) : PostRepository {
+    override fun getFeaturedPostTitle(): Flow<NetworkResult<String>> {
         return safeApiCall(
-            request = { postApi.getFeaturedPost() },
+            request = { postRemoteDataSource.getFeaturedPost() },
             validate = { post -> post.toBusinessFailure() },
         ).mapSuccess { post -> post.title }
     }
 
-    fun getPosts(
+    override fun getPosts(
         page: Int,
         pageSize: Int,
-    ): Flow<NetworkResult<List<FeedPost>>> {
-        return safeApiCall(
-            request = {
-                httpClient
-                    .get("https://jsonplaceholder.typicode.com/posts") {
-                        url {
-                            parameters.append("_page", page.toString())
-                            parameters.append("_limit", pageSize.toString())
-                        }
-                    }
-                    .body<List<PostDto>>()
-            },
-        ).mapSuccess { posts ->
-            posts.map { it.toFeedPost() }
+    ): Flow<NetworkResult<CachedResource<List<FeedPost>>>> = flow {
+        val cachedPosts = if (page == 1) {
+            postLocalDataSource.getCachedFeedPage()
+        } else {
+            null
         }
+
+        if (!cachedPosts.isNullOrEmpty()) {
+            emit(
+                NetworkResult.Success(
+                    CachedResource(
+                        data = cachedPosts,
+                        isFromCache = true,
+                    ),
+                ),
+            )
+        }
+
+        emitAll(
+            safeApiCall(
+                request = { postRemoteDataSource.getPosts(page = page, pageSize = pageSize) },
+            ).mapSuccess { posts ->
+                val mappedPosts = posts.map { it.toFeedPost() }
+                if (page == 1) {
+                    postLocalDataSource.saveFeedPage(mappedPosts)
+                } else {
+                    mappedPosts.forEach(postLocalDataSource::savePost)
+                }
+                CachedResource(
+                    data = mappedPosts,
+                    isFromCache = false,
+                )
+            },
+        )
     }
 
-    fun getPostDetail(id: Int): Flow<NetworkResult<FeedPost>> {
-        return safeApiCall(
-            request = {
-                httpClient
-                    .get("https://jsonplaceholder.typicode.com/posts/$id")
-                    .body<PostDto>()
-            },
-            validate = { post -> post.toBusinessFailure() },
-        ).mapSuccess { post ->
-            post.toFeedPost()
+    override fun getPostDetail(id: Int): Flow<NetworkResult<CachedResource<FeedPost>>> = flow {
+        postLocalDataSource.getCachedPost(id)?.let { cachedPost ->
+            emit(
+                NetworkResult.Success(
+                    CachedResource(
+                        data = cachedPost,
+                        isFromCache = true,
+                    ),
+                ),
+            )
         }
+
+        emitAll(
+            safeApiCall(
+                request = { postRemoteDataSource.getPostDetail(id) },
+                validate = { post -> post.toBusinessFailure() },
+            ).mapSuccess { post ->
+                post.toFeedPost().also(postLocalDataSource::savePost).let { mappedPost ->
+                    CachedResource(
+                        data = mappedPost,
+                        isFromCache = false,
+                    )
+                }
+            },
+        )
     }
 }
 

@@ -11,7 +11,7 @@ ANDROID_APP_ID ?= com.example.demo_03
 ANDROID_MAIN_ACTIVITY ?= .MainActivity
 ANDROID_APK_DIR ?= $(ANDROID_APP_MODULE)/build/outputs/apk/debug
 
-.PHONY: help gradle-tasks clean test android-build android-launch desktop-run desktop-package desktop-package-dmg desktop-package-msi desktop-package-deb ios-open
+.PHONY: help gradle-tasks clean test verify android-build android-launch desktop-run desktop-package desktop-package-dmg desktop-package-msi desktop-package-deb ios-open
 
 help: ## Show available commands
 	@printf "Common commands for Demo03\n\n"
@@ -25,6 +25,9 @@ clean: ## Clean Gradle build outputs
 
 test: ## Run shared tests
 	$(GRADLEW) :$(COMPOSE_MODULE):allTests
+
+verify: ## Run lint, compile, and shared tests
+	$(GRADLEW) verify
 
 android-build: ## Build Android debug APK, install it with adb, and launch the app
 	$(GRADLEW) :$(ANDROID_APP_MODULE):assembleDebug

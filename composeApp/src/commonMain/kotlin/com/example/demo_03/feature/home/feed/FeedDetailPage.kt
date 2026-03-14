@@ -19,6 +19,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -81,6 +82,14 @@ fun FeedDetailPage(
                             .padding(top = 8.dp),
                     ) {
                         Column(modifier = Modifier.padding(20.dp)) {
+                            if (state.statusMessage != null) {
+                                Text(
+                                    text = state.statusMessage,
+                                    color = if (state.isShowingCachedContent) Color(0xFF8A6200) else Color(0xFF2F5D3A),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                )
+                                Spacer(modifier = Modifier.height(10.dp))
+                            }
                             Text(
                                 text = state.post.title,
                                 style = MaterialTheme.typography.headlineSmall,

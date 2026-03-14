@@ -4,12 +4,12 @@ import com.example.demo_03.core.MviViewModel
 import com.example.demo_03.core.logLifecycle
 import com.example.demo_03.data.FeedPost
 import com.example.demo_03.data.PostRepository
-import com.example.demo_03.data.remote.awaitSuccessOrNull
-import com.example.demo_03.data.remote.onError
+import com.example.demo_03.data.remote.NetworkResult
 import com.example.demo_03.data.remote.onFailureToast
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onStart
 
 data class FeedState(
@@ -20,6 +20,8 @@ data class FeedState(
     val errorMessage: String? = null,
     val loadMoreErrorMessage: String? = null,
     val endReached: Boolean = false,
+    val isShowingCachedContent: Boolean = false,
+    val statusMessage: String? = null,
 )
 
 sealed interface FeedIntent {
@@ -48,39 +50,67 @@ class FeedViewModel(
         if (state.value.isRefreshing) return
         logLifecycle("Feed", "refresh")
         launch {
-            val posts = postRepository.getPosts(page = 1, pageSize = pageSize)
+            postRepository.getPosts(page = 1, pageSize = pageSize)
                 .onStart {
                     setState {
                         copy(
                             isRefreshing = true,
                             errorMessage = null,
                             loadMoreErrorMessage = null,
-                        )
-                    }
-                }
-                .onError { error ->
-                    setState {
-                        copy(
-                            isRefreshing = false,
-                            errorMessage = error.message,
-                            posts = persistentListOf(),
-                            endReached = false,
+                            statusMessage = null,
                         )
                     }
                 }
                 .onFailureToast()
-                .awaitSuccessOrNull() ?: return@launch
+                .collect { result ->
+                    when (result) {
+                        is NetworkResult.Success -> {
+                            val page = result.data
+                            if (!page.isFromCache) {
+                                nextPage = 2
+                            }
+                            setState {
+                                copy(
+                                    posts = page.data.toImmutableList(),
+                                    isRefreshing = page.isFromCache,
+                                    isLoadingMore = false,
+                                    errorMessage = null,
+                                    loadMoreErrorMessage = null,
+                                    endReached = page.data.size < pageSize,
+                                    isShowingCachedContent = page.isFromCache,
+                                    statusMessage = if (page.isFromCache) {
+                                        "当前展示的是本地缓存内容，正在同步最新数据。"
+                                    } else {
+                                        null
+                                    },
+                                )
+                            }
+                        }
 
-            nextPage = 2
-            setState {
-                copy(
-                    posts = posts.toImmutableList(),
-                    isRefreshing = false,
-                    isLoadingMore = false,
-                    errorMessage = null,
-                    loadMoreErrorMessage = null,
-                    endReached = posts.size < pageSize,
-                )
+                        is NetworkResult.Error -> {
+                            setState {
+                                copy(
+                                    isRefreshing = false,
+                                    errorMessage = if (this.posts.isEmpty()) result.cause.message else null,
+                                    endReached = this.posts.size < pageSize,
+                                    isShowingCachedContent = this.posts.isNotEmpty(),
+                                    statusMessage = if (this.posts.isNotEmpty()) {
+                                        "网络不可用，当前展示的是本地缓存内容。"
+                                    } else {
+                                        null
+                                    },
+                                )
+                            }
+                        }
+                    }
+                }
+            if (state.value.posts.isNotEmpty() && !state.value.isShowingCachedContent) {
+                setState {
+                    copy(
+                        isRefreshing = false,
+                        statusMessage = null,
+                    )
+                }
             }
         }
     }
@@ -93,7 +123,7 @@ class FeedViewModel(
         logLifecycle("Feed", "loadMore-$nextPage")
         launch {
             val page = nextPage
-            val posts = postRepository.getPosts(page = page, pageSize = pageSize)
+            postRepository.getPosts(page = page, pageSize = pageSize)
                 .onStart {
                     setState {
                         copy(
@@ -102,26 +132,31 @@ class FeedViewModel(
                         )
                     }
                 }
-                .onError { error ->
-                    setState {
-                        copy(
-                            isLoadingMore = false,
-                            loadMoreErrorMessage = error.message,
-                        )
+                .onFailureToast()
+                .collect { result ->
+                    when (result) {
+                        is NetworkResult.Success -> {
+                            nextPage += 1
+                            setState {
+                                copy(
+                                    posts = (this.posts + result.data.data).distinctBy { it.id }.toImmutableList(),
+                                    isLoadingMore = false,
+                                    loadMoreErrorMessage = null,
+                                    endReached = result.data.data.size < pageSize,
+                                )
+                            }
+                        }
+
+                        is NetworkResult.Error -> {
+                            setState {
+                                copy(
+                                    isLoadingMore = false,
+                                    loadMoreErrorMessage = result.cause.message,
+                                )
+                            }
+                        }
                     }
                 }
-                .onFailureToast()
-                .awaitSuccessOrNull() ?: return@launch
-
-            nextPage += 1
-            setState {
-                copy(
-                    posts = (this.posts + posts).toImmutableList(),
-                    isLoadingMore = false,
-                    loadMoreErrorMessage = null,
-                    endReached = posts.size < pageSize,
-                )
-            }
         }
     }
 }

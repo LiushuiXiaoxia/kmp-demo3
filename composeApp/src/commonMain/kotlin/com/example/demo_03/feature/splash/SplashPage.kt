@@ -26,6 +26,7 @@ import com.example.demo_03.core.ScreenLifecycleLogger
 import com.example.demo_03.feature.home.HomeTab
 import com.example.demo_03.navigation.AppRoute
 import com.example.demo_03.navigation.LocalAppNavController
+import com.example.demo_03.navigation.PendingNavigation
 import com.example.demo_03.navigation.navigateReplacingSplash
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -38,7 +39,10 @@ fun SplashRoute() {
             parametersOf(
                 { isLoggedIn: Boolean ->
                     navController.navigateReplacingSplash(
-                        if (isLoggedIn) AppRoute.Home(HomeTab.Feed) else AppRoute.Login,
+                        when {
+                            isLoggedIn -> PendingNavigation.consume() ?: AppRoute.Home(HomeTab.Feed)
+                            else -> AppRoute.Login
+                        },
                     )
                 },
             )
@@ -106,7 +110,7 @@ private fun SplashPagePreview() {
         SplashPage(
             state = SplashState(
                 title = "Demo03",
-                subtitle = "Checking session...",
+                subtitle = "Checking session and cached state...",
             )
         )
     }
