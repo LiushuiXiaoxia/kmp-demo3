@@ -38,7 +38,7 @@ fun SplashRoute() {
             parametersOf(
                 { isLoggedIn: Boolean ->
                     navController.navigateReplacingSplash(
-                        if (isLoggedIn) AppRoute.home(HomeTab.Feed) else AppRoute.Login,
+                        if (isLoggedIn) AppRoute.Home(HomeTab.Feed) else AppRoute.Login,
                     )
                 },
             )

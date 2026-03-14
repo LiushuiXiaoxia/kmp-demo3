@@ -35,7 +35,7 @@ fun LoginRoute() {
         parameters = {
             parametersOf(
                 {
-                    navController.navigateReplacingLogin(AppRoute.home(HomeTab.Feed))
+                    navController.navigateReplacingLogin(AppRoute.Home(HomeTab.Feed))
                 },
             )
         },

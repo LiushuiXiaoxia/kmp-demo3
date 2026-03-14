@@ -4,29 +4,33 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.navigation.NavHostController
 import com.example.demo_03.feature.home.HomeTab
 
-object AppRoute {
-    const val Splash = "splash"
-    const val Login = "login"
-    const val HomeTabArg = "tab"
-    const val Home = "home/{$HomeTabArg}"
+sealed class AppRoute(val route: String) {
+    data object Splash : AppRoute("splash")
 
-    fun home(tab: HomeTab): String {
-        return "home/${tab.routeSegment}"
+    data object Login : AppRoute("login")
+
+    data class Home(val tab: HomeTab) : AppRoute("home/${tab.routeSegment}") {
+        companion object {
+            const val TabArg = "tab"
+            const val pattern = "home/{$TabArg}"
+        }
     }
 
-    fun fromDeepLink(url: String): String? {
-        val normalized = url
-            .substringAfter("://", url)
-            .removePrefix("app/")
-            .removePrefix("/")
+    companion object {
+        fun fromDeepLink(url: String): AppRoute? {
+            val normalized = url
+                .substringAfter("://", url)
+                .removePrefix("app/")
+                .removePrefix("/")
 
-        return when (normalized) {
-            "login" -> Login
-            "home/feed" -> home(HomeTab.Feed)
-            "home/discover" -> home(HomeTab.Discover)
-            "home/messages" -> home(HomeTab.Messages)
-            "home/profile" -> home(HomeTab.Profile)
-            else -> null
+            return when (normalized) {
+                "login" -> Login
+                "home/feed" -> Home(HomeTab.Feed)
+                "home/discover" -> Home(HomeTab.Discover)
+                "home/messages" -> Home(HomeTab.Messages)
+                "home/profile" -> Home(HomeTab.Profile)
+                else -> null
+            }
         }
     }
 }
@@ -45,23 +49,31 @@ val LocalAppNavController = compositionLocalOf<NavHostController> {
 
 fun NavHostController.navigateReplacingSplash(route: String) {
     navigate(route) {
-        popUpTo(AppRoute.Splash) {
+        popUpTo(AppRoute.Splash.route) {
             inclusive = true
         }
     }
+}
+
+fun NavHostController.navigateReplacingSplash(route: AppRoute) {
+    navigateReplacingSplash(route.route)
 }
 
 fun NavHostController.navigateReplacingLogin(route: String) {
     navigate(route) {
-        popUpTo(AppRoute.Login) {
+        popUpTo(AppRoute.Login.route) {
             inclusive = true
         }
     }
 }
 
+fun NavHostController.navigateReplacingLogin(route: AppRoute) {
+    navigateReplacingLogin(route.route)
+}
+
 fun NavHostController.navigateToLogin() {
-    navigate(AppRoute.Login) {
-        popUpTo(AppRoute.Splash) {
+    navigate(AppRoute.Login.route) {
+        popUpTo(AppRoute.Splash.route) {
             inclusive = true
         }
     }

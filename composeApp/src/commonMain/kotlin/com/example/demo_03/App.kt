@@ -54,7 +54,7 @@ private fun AppInitializer(navController: NavHostController) {
     LaunchedEffect(navController) {
         DeepLinkBus.links.collect { url ->
             val route = AppRoute.fromDeepLink(url) ?: return@collect
-            navController.navigate(route) {
+            navController.navigate(route.route) {
                 launchSingleTop = true
             }
         }
@@ -85,7 +85,7 @@ private fun AppContainer(content: @Composable () -> Unit) {
 private fun AppNavHost(navController: NavHostController) {
     NavHost(
         navController = navController,
-        startDestination = AppRoute.Splash,
+        startDestination = AppRoute.Splash.route,
     ) {
         splashDestination()
         loginDestination()
@@ -95,7 +95,7 @@ private fun AppNavHost(navController: NavHostController) {
 
 private fun NavGraphBuilder.splashDestination() {
     composable(
-        route = AppRoute.Splash,
+        route = AppRoute.Splash.route,
         deepLinks = listOf(
             navDeepLink { uriPattern = DeepLinkRegistry.HomeFeed },
             navDeepLink { uriPattern = DeepLinkRegistry.HomeDiscover },
@@ -110,7 +110,7 @@ private fun NavGraphBuilder.splashDestination() {
 
 private fun NavGraphBuilder.loginDestination() {
     composable(
-        route = AppRoute.Login,
+        route = AppRoute.Login.route,
         deepLinks = listOf(
             navDeepLink { uriPattern = DeepLinkRegistry.Login },
         ),
@@ -122,9 +122,9 @@ private fun NavGraphBuilder.loginDestination() {
 private fun NavGraphBuilder.homeDestination(
 ) {
     composable(
-        route = AppRoute.Home,
+        route = AppRoute.Home.pattern,
         arguments = listOf(
-            navArgument(AppRoute.HomeTabArg) {
+            navArgument(AppRoute.Home.TabArg) {
                 type = NavType.StringType
                 defaultValue = HomeTab.Feed.routeSegment
             },
@@ -137,7 +137,7 @@ private fun NavGraphBuilder.homeDestination(
         ),
     ) { backStackEntry ->
         val selectedTab = HomeTab.fromRoute(
-            backStackEntry.arguments?.getString(AppRoute.HomeTabArg),
+            backStackEntry.arguments?.getString(AppRoute.Home.TabArg),
         )
         HomeRoute(initialTab = selectedTab)
     }
