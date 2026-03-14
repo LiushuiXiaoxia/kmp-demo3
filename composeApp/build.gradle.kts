@@ -7,6 +7,9 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeHotReload)
+    alias(libs.plugins.googleKsp)
+    alias(libs.plugins.kotlinSerialization)
+    alias(libs.plugins.ktorfit)
 }
 
 kotlin {
@@ -53,10 +56,15 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.androidx.navigation.compose)
             implementation(libs.kotlinx.coroutinesCore)
+            implementation(libs.kotlinx.serialization.json)
             implementation(libs.napier)
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
             implementation(libs.koin.composeViewModel)
+            implementation(libs.ktor.client.contentNegotiation)
+            implementation(libs.ktor.client.logging)
+            implementation(libs.ktor.serialization.kotlinxJson)
+            implementation(libs.ktorfit.lib)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -66,6 +74,10 @@ kotlin {
             implementation(libs.kotlinx.coroutinesSwing)
         }
     }
+}
+
+dependencies {
+    add("kspCommonMainMetadata", libs.ktorfit.ksp)
 }
 
 compose.desktop {

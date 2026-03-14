@@ -46,6 +46,8 @@
 - Kotlin Coroutines `1.10.2`
 - Koin `4.1.1`
 - Napier `2.7.1`
+- Ktor `3.3.3`
+- Ktorfit `2.7.2`
 - JVM 目标版本：`11`
 
 ## 工程结构
@@ -148,6 +150,38 @@ open "demo03://app/home/profile"
 - 已配置 JetBrains Compose 仓库
 - 已配置阿里云 Maven 镜像
 - Gradle 已开启 configuration cache 与 build cache
+
+## Ktor / Ktorfit 接入示例
+
+项目已在共享模块中接入 `Ktor + Ktorfit + Koin`，示例代码位于：
+
+- [`NetworkModule.kt`](/Users/leon/ws/kmm/demo03/composeApp/src/commonMain/kotlin/com/example/demo_03/di/NetworkModule.kt)
+- [`PostApi.kt`](/Users/leon/ws/kmm/demo03/composeApp/src/commonMain/kotlin/com/example/demo_03/data/remote/PostApi.kt)
+- [`PostRepository.kt`](/Users/leon/ws/kmm/demo03/composeApp/src/commonMain/kotlin/com/example/demo_03/data/PostRepository.kt)
+
+最小 Koin 注入示例：
+
+```kotlin
+val networkModule = module {
+    single {
+        HttpClient {
+            install(ContentNegotiation) {
+                json(get())
+            }
+        }
+    }
+
+    single {
+        Ktorfit.Builder()
+            .baseUrl("https://jsonplaceholder.typicode.com/")
+            .httpClient(get())
+            .build()
+    }
+
+    single<PostApi> { get<Ktorfit>().create() }
+    single { PostRepository(postApi = get()) }
+}
+```
 
 ## 后续可扩展方向
 

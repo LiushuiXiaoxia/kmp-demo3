@@ -6,7 +6,7 @@ import org.koin.mp.KoinPlatform
 fun initKoin() {
     if (KoinPlatform.getKoinOrNull() == null) {
         startKoin {
-            modules(appModule)
+            modules(appModule, networkModule)
         }
     }
 }
