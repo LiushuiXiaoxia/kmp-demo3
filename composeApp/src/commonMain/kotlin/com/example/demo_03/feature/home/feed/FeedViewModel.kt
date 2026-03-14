@@ -1,7 +1,7 @@
 package com.example.demo_03.feature.home.feed
 
 import com.example.demo_03.data.PostRepository
-import com.example.demo_03.data.remote.getSuccessOrNull
+import com.example.demo_03.data.remote.awaitSuccessOrNull
 import com.example.demo_03.data.remote.onError
 import com.example.demo_03.data.remote.onFailureToast
 import com.example.demo_03.core.MviViewModel
@@ -45,7 +45,7 @@ class FeedViewModel(
                     setState { copy(isLoading = false, errorMessage = error.message) }
                 }
                 .onFailureToast()
-                .getSuccessOrNull() ?: return@launch
+                .awaitSuccessOrNull() ?: return@launch
 
             setState {
                 copy(

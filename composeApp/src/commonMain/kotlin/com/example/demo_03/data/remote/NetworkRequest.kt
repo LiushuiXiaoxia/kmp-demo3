@@ -24,6 +24,36 @@ sealed interface NetworkResult<out T> {
     ) : NetworkResult<Nothing>
 }
 
+val NetworkResult<*>.isSuccess: Boolean
+    get() = this is NetworkResult.Success
+
+val NetworkResult<*>.isFailure: Boolean
+    get() = this is NetworkResult.Error
+
+fun <T> NetworkResult<T>.getOrNull(): T? {
+    return when (this) {
+        is NetworkResult.Success -> data
+        is NetworkResult.Error -> null
+    }
+}
+
+fun <T> NetworkResult<T>.errorOrNull(): NetworkError? {
+    return when (this) {
+        is NetworkResult.Success -> null
+        is NetworkResult.Error -> cause
+    }
+}
+
+inline fun <T, R> NetworkResult<T>.fold(
+    onSuccess: (T) -> R,
+    onError: (NetworkError) -> R,
+): R {
+    return when (this) {
+        is NetworkResult.Success -> onSuccess(data)
+        is NetworkResult.Error -> onError(cause)
+    }
+}
+
 inline fun <T, R> NetworkResult<T>.mapSuccess(transform: (T) -> R): NetworkResult<R> {
     return when (this) {
         is NetworkResult.Success -> NetworkResult.Success(transform(data))
@@ -123,11 +153,30 @@ fun <T> Flow<NetworkResult<T>>.onFailureToast(): Flow<NetworkResult<T>> {
     }
 }
 
+suspend fun <T> Flow<NetworkResult<T>>.awaitResult(): NetworkResult<T> {
+    return first()
+}
+
+suspend fun <T> Flow<NetworkResult<T>>.awaitSuccessOrNull(): T? {
+    return awaitResult().getOrNull()
+}
+
+@Deprecated(
+    message = "Use awaitSuccessOrNull() for clearer Flow semantics.",
+    replaceWith = ReplaceWith("awaitSuccessOrNull()"),
+)
 suspend fun <T> Flow<NetworkResult<T>>.getSuccessOrNull(): T? {
-    return when (val result = first()) {
-        is NetworkResult.Success -> result.data
-        is NetworkResult.Error -> null
-    }
+    return awaitSuccessOrNull()
+}
+
+suspend fun <T, R> Flow<NetworkResult<T>>.foldResult(
+    onSuccess: (T) -> R,
+    onError: (NetworkError) -> R,
+): R {
+    return awaitResult().fold(
+        onSuccess = onSuccess,
+        onError = onError,
+    )
 }
 
 fun Throwable.toNetworkError(): NetworkError {
