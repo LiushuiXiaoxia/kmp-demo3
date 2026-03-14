@@ -1,4 +1,4 @@
-package com.example.demo_03.feature.home
+package com.example.demo_03.feature.home.profile
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.demo_03.core.ScreenLifecycleLogger
+import com.example.demo_03.feature.home.components.PageCard
 import com.example.demo_03.navigation.LocalAppNavController
 import com.example.demo_03.navigation.navigateToLogin
 import org.koin.compose.viewmodel.koinViewModel

@@ -1,4 +1,4 @@
-package com.example.demo_03.feature.home
+package com.example.demo_03.feature.home.feed
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.demo_03.core.ScreenLifecycleLogger
+import com.example.demo_03.feature.home.components.PageCard
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable

@@ -1,10 +1,10 @@
 package com.example.demo_03.di
 
-import com.example.demo_03.feature.home.DiscoverViewModel
-import com.example.demo_03.feature.home.FeedViewModel
 import com.example.demo_03.feature.home.HomeViewModel
-import com.example.demo_03.feature.home.MessagesViewModel
-import com.example.demo_03.feature.home.ProfileViewModel
+import com.example.demo_03.feature.home.discover.DiscoverViewModel
+import com.example.demo_03.feature.home.feed.FeedViewModel
+import com.example.demo_03.feature.home.messages.MessagesViewModel
+import com.example.demo_03.feature.home.profile.ProfileViewModel
 import com.example.demo_03.feature.login.LoginViewModel
 import com.example.demo_03.feature.splash.SplashViewModel
 import com.example.demo_03.session.SessionStore

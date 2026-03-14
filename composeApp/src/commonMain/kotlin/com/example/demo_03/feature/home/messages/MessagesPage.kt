@@ -1,5 +1,7 @@
-package com.example.demo_03.feature.home
+package com.example.demo_03.feature.home.messages
 
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -10,33 +12,36 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.demo_03.core.ScreenLifecycleLogger
+import com.example.demo_03.feature.home.components.PageCard
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun DiscoverRoute() {
-    val viewModel = koinViewModel<DiscoverViewModel>()
+fun MessagesRoute() {
+    val viewModel = koinViewModel<MessagesViewModel>()
     val state by viewModel.state.collectAsState()
 
-    DiscoverPage(
+    MessagesPage(
         state = state,
         onIntent = viewModel::onIntent,
     )
 }
 
 @Composable
-fun DiscoverPage(
-    state: DiscoverState,
-    onIntent: (DiscoverIntent) -> Unit,
+fun MessagesPage(
+    state: MessagesState,
+    onIntent: (MessagesIntent) -> Unit,
 ) {
-    ScreenLifecycleLogger("Discover")
+    ScreenLifecycleLogger("Messages")
     PageCard(
-        title = state.headline,
-        actionText = "换一组",
-        onAction = { onIntent(DiscoverIntent.Shuffle) },
+        title = "消息中心",
+        actionText = "全部已读",
+        onAction = { onIntent(MessagesIntent.MarkAllRead) },
     ) {
-        state.items.forEach { item ->
+        Text("未读消息: ${state.unreadCount}")
+        Spacer(modifier = Modifier.height(12.dp))
+        state.entries.forEach { entry ->
             Text(
-                text = "• $item",
+                text = entry,
                 modifier = Modifier.padding(vertical = 4.dp),
             )
         }
@@ -45,10 +50,10 @@ fun DiscoverPage(
 
 @Preview
 @Composable
-private fun DiscoverPagePreview() {
+private fun MessagesPagePreview() {
     MaterialTheme {
-        DiscoverPage(
-            state = DiscoverState(),
+        MessagesPage(
+            state = MessagesState(),
             onIntent = {},
         )
     }

@@ -1,4 +1,4 @@
-package com.example.demo_03.feature.home
+package com.example.demo_03.feature.home.feed
 
 import com.example.demo_03.data.PostRepository
 import com.example.demo_03.core.MviViewModel

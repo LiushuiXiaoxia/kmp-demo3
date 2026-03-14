@@ -1,4 +1,4 @@
-package com.example.demo_03.feature.home
+package com.example.demo_03.feature.home.messages
 
 import com.example.demo_03.core.MviViewModel
 import com.example.demo_03.core.logLifecycle
