@@ -18,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -32,6 +33,8 @@ import org.koin.core.parameter.parametersOf
 
 @Composable
 fun HomeRoute(
+    selectedTab: HomeTab,
+    onNavigateTab: (HomeTab) -> Unit,
     onLogout: () -> Unit,
 ) {
     val sessionStore = koinInject<SessionStore>()
@@ -50,6 +53,10 @@ fun HomeRoute(
     val messagesState by messagesViewModel.state.collectAsState()
     val profileState by profileViewModel.state.collectAsState()
 
+    LaunchedEffect(selectedTab) {
+        homeViewModel.onIntent(HomeIntent.SelectTab(selectedTab))
+    }
+
     ScreenLifecycleLogger("Home")
 
     HomePage(
@@ -59,7 +66,12 @@ fun HomeRoute(
         discoverState = discoverState,
         messagesState = messagesState,
         profileState = profileState,
-        onHomeIntent = homeViewModel::onIntent,
+        onHomeIntent = { intent ->
+            homeViewModel.onIntent(intent)
+            if (intent is HomeIntent.SelectTab) {
+                onNavigateTab(intent.tab)
+            }
+        },
         onFeedIntent = feedViewModel::onIntent,
         onDiscoverIntent = discoverViewModel::onIntent,
         onMessagesIntent = messagesViewModel::onIntent,

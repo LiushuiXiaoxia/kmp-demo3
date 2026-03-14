@@ -14,8 +14,10 @@ struct ContentView: View {
     var body: some View {
         ComposeView()
             .ignoresSafeArea()
+            .onOpenURL { url in
+                DeepLinkBusKt.handleExternalDeepLink(url: url.absoluteString)
+            }
     }
 }
-
 
 

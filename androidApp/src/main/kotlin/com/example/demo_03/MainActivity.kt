@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.demo_03.navigation.handleExternalDeepLink
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -15,6 +16,14 @@ class MainActivity : ComponentActivity() {
         setContent {
             App()
         }
+
+        handleExternalDeepLink(intent?.dataString)
+    }
+
+    override fun onNewIntent(intent: android.content.Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleExternalDeepLink(intent.dataString)
     }
 }
 
