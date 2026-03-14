@@ -1,6 +1,8 @@
 package com.example.demo_03.feature.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -119,8 +121,9 @@ fun HomePage(
                 .background(
                     brush = Brush.verticalGradient(
                         colors = listOf(
-                            Color(0xFFFBF7F2),
-                            Color(0xFFF1F4FA),
+                            Color(0xFFF8F1E7),
+                            Color(0xFFE9F1F8),
+                            Color(0xFFF7FBFD),
                         )
                     )
                 )
@@ -170,16 +173,25 @@ private fun HomeBottomBar(
         modifier = Modifier
             .fillMaxWidth()
             .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = 20.dp, vertical = 10.dp),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(
-                    color = Color(0xFFF5EEF6),
-                    shape = RoundedCornerShape(26.dp),
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color(0xFFFFFCFB),
+                            Color(0xFFF5F0E8),
+                        ),
+                    ),
+                    shape = RoundedCornerShape(24.dp),
                 )
-                .padding(horizontal = 10.dp, vertical = 8.dp),
+                .border(
+                    border = BorderStroke(1.dp, Color(0xFFE7DCCF)),
+                    shape = RoundedCornerShape(24.dp),
+                )
+                .padding(horizontal = 8.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             HomeTab.entries.forEach { tab ->
@@ -187,26 +199,30 @@ private fun HomeBottomBar(
                 Column(
                     modifier = Modifier
                         .weight(1f)
-                        .clip(RoundedCornerShape(20.dp))
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(
+                            color = if (isSelected) Color(0xFF1F3142) else Color.Transparent,
+                            shape = RoundedCornerShape(18.dp),
+                        )
                         .clickable { onTabSelected(tab) }
                         .padding(vertical = 6.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Box(
                         modifier = Modifier
-                            .width(if (isSelected) 28.dp else 16.dp)
-                            .height(4.dp)
+                            .width(if (isSelected) 24.dp else 10.dp)
+                            .height(2.dp)
                             .background(
-                                color = if (isSelected) Color(0xFF7A5AC8) else Color.Transparent,
+                                color = if (isSelected) Color(0xFFF0C27B) else Color.Transparent,
                                 shape = CircleShape,
                             )
                     )
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
                     Text(
                         text = tab.label,
-                        style = MaterialTheme.typography.labelLarge,
+                        style = MaterialTheme.typography.labelMedium,
                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                        color = if (isSelected) Color(0xFF3E2A63) else Color(0xFF6D6676),
+                        color = if (isSelected) Color(0xFFFFFBF7) else Color(0xFF5F6670),
                     )
                 }
             }
@@ -223,12 +239,59 @@ private fun HomeHeader(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
+        shape = RoundedCornerShape(28.dp),
+        border = BorderStroke(1.dp, Color(0xFFE8D8C3)),
     ) {
-        Column(modifier = Modifier.padding(20.dp, 10.dp)) {
+        Column(
+            modifier = Modifier
+                .background(
+                    brush = Brush.linearGradient(
+                        colors = listOf(
+                            Color(0xFFFFF7ED),
+                            Color(0xFFF4E8D6),
+                            Color(0xFFE7EDF7),
+                        ),
+                    ),
+                )
+                .padding(20.dp),
+        ) {
             Text(
-                text = selectedTab.label,
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
+                text = "欢迎回来，$userName",
+                style = MaterialTheme.typography.labelLarge,
+                color = Color(0xFF6A6258),
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = selectedTab.label,
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Black,
+                    color = Color(0xFF1D2A36),
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(999.dp))
+                        .background(Color(0xFF1F3142))
+                        .padding(horizontal = 10.dp, vertical = 5.dp),
+                ) {
+                    Text(
+                        text = "Daily",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color(0xFFFFF7F1),
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = when (selectedTab) {
+                    HomeTab.Feed -> "把今天的重要内容整理成更清晰的阅读流。"
+                    HomeTab.Discover -> "看看灵感和新的推荐，保持界面节奏。"
+                    HomeTab.Messages -> "快速处理消息，让信息流保持轻盈。"
+                    HomeTab.Profile -> "调整偏好与个人信息。"
+                },
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color(0xFF5B6470),
             )
         }
     }

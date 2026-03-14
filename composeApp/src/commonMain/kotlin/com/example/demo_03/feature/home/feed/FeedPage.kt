@@ -1,6 +1,9 @@
 package com.example.demo_03.feature.home.feed
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,14 +14,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
@@ -29,12 +36,14 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.demo_03.core.ScreenLifecycleLogger
 import com.example.demo_03.data.FeedPost
-import com.example.demo_03.feature.home.components.PageCard
 import com.example.demo_03.navigation.AppRoute
 import com.example.demo_03.navigation.LocalAppNavController
 import kotlinx.collections.immutable.persistentListOf
@@ -82,27 +91,43 @@ fun FeedPage(
             .collect { onIntent(FeedIntent.LoadMore) }
     }
 
-    PageCard(
-        title = state.title,
-        actionText = if (state.isRefreshing) "刷新中..." else "刷新",
-        onAction = { onIntent(FeedIntent.Refresh) },
+    Surface(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(bottom = 16.dp),
+        color = Color.Transparent,
     ) {
         PullToRefreshBox(
             isRefreshing = state.isRefreshing,
             onRefresh = { onIntent(FeedIntent.Refresh) },
             modifier = Modifier.fillMaxSize(),
         ) {
-            if (state.posts.isEmpty() && state.isRefreshing) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
+            LazyColumn(
+                state = listState,
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(bottom = 20.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp),
+            ) {
+                item {
+                    FeedHeroCard(
+                        title = state.title,
+                        isRefreshing = state.isRefreshing,
+                        onRefresh = { onIntent(FeedIntent.Refresh) },
+                    )
                 }
-            } else {
-                LazyColumn(
-                    state = listState,
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
+
+                if (state.posts.isEmpty() && state.isRefreshing) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 28.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            CircularProgressIndicator(color = Color(0xFF24435B))
+                        }
+                    }
+                } else {
                     if (state.errorMessage != null && state.posts.isEmpty()) {
                         item {
                             FeedErrorCard(
@@ -135,34 +160,139 @@ fun FeedPage(
 }
 
 @Composable
+private fun FeedHeroCard(
+    title: String,
+    isRefreshing: Boolean,
+    onRefresh: () -> Unit,
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth(),
+        color = Color.Transparent,
+    ) {
+        Column(
+            modifier = Modifier
+                .clip(RoundedCornerShape(24.dp))
+                .background(
+                    brush = Brush.horizontalGradient(
+                        colors = listOf(
+                            Color(0xFF203446),
+                            Color(0xFF35536D),
+                        ),
+                    ),
+                )
+                .padding(horizontal = 18.dp, vertical = 16.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Black,
+                    color = Color(0xFFFFFCF7),
+                )
+                Spacer(modifier = Modifier.size(8.dp))
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(999.dp))
+                        .background(Color(0x26FFFFFF))
+                        .padding(horizontal = 10.dp, vertical = 5.dp),
+                ) {
+                    Text(
+                        text = if (isRefreshing) "同步中" else "Daily",
+                        color = Color(0xFFE8F0F8),
+                        style = MaterialTheme.typography.labelMedium,
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "下拉刷新，点开详情，阅读今天的重要内容。",
+                style = MaterialTheme.typography.bodySmall,
+                color = Color(0xFFD7E4F0),
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            OutlinedButton(
+                onClick = onRefresh,
+                border = BorderStroke(1.dp, Color(0x99FFF6E6)),
+            ) {
+                Text(
+                    text = if (isRefreshing) "刷新中" else "刷新",
+                    color = Color(0xFFFFFBF5),
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun FeedPostCard(
     post: FeedPost,
     onClick: () -> Unit,
 ) {
-    androidx.compose.material3.Card(
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
+        color = Color(0xFFFFFBF7),
+        shape = RoundedCornerShape(24.dp),
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(1.dp, Color(0xFFEBDDCB), RoundedCornerShape(24.dp))
+                .padding(18.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(999.dp))
+                        .background(Color(0xFFF3E1C3))
+                        .padding(horizontal = 10.dp, vertical = 5.dp),
+                ) {
+                    Text(
+                        text = post.authorName,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = Color(0xFF6E4E18),
+                    )
+                }
+                Box(
+                    modifier = Modifier
+                        .size(34.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFF243B50)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = "->",
+                        color = Color(0xFFFFF7EF),
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = post.title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            Text(
-                text = post.body,
-                style = MaterialTheme.typography.bodyMedium,
-                maxLines = 3,
-                overflow = TextOverflow.Ellipsis,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1E2A36),
             )
             Spacer(modifier = Modifier.height(10.dp))
             Text(
-                text = post.authorName,
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.primary,
+                text = post.body,
+                style = MaterialTheme.typography.bodyLarge,
+                maxLines = 4,
+                overflow = TextOverflow.Ellipsis,
+                color = Color(0xFF66717D),
+                lineHeight = MaterialTheme.typography.bodyLarge.lineHeight,
             )
         }
     }
@@ -178,21 +308,26 @@ private fun FeedListFooter(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 12.dp),
+                    .padding(vertical = 18.dp),
                 horizontalArrangement = Arrangement.Center,
             ) {
-                CircularProgressIndicator()
+                CircularProgressIndicator(color = Color(0xFF24435B))
             }
         }
 
         state.loadMoreErrorMessage != null -> {
             Column(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(22.dp))
+                    .background(Color(0xFFFFF3F1))
+                    .border(1.dp, Color(0xFFF1C7BF), RoundedCornerShape(22.dp))
+                    .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
                     text = state.loadMoreErrorMessage,
-                    color = MaterialTheme.colorScheme.error,
+                    color = Color(0xFF8A372B),
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedButton(onClick = onRetryLoadMore) {
@@ -206,8 +341,8 @@ private fun FeedListFooter(
                 text = "已经到底了",
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 12.dp),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    .padding(vertical = 18.dp),
+                color = Color(0xFF6B7380),
             )
         }
     }
@@ -219,12 +354,17 @@ fun FeedErrorCard(
     onRetry: () -> Unit,
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(24.dp))
+            .background(Color(0xFFFFF3F0))
+            .border(1.dp, Color(0xFFF2C9C2), RoundedCornerShape(24.dp))
+            .padding(18.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
             text = message,
-            color = MaterialTheme.colorScheme.error,
+            color = Color(0xFF8E3D31),
         )
         Spacer(modifier = Modifier.height(8.dp))
         Button(onClick = onRetry) {
