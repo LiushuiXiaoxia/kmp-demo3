@@ -21,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.demo_03.core.ScreenLifecycleLogger
+import com.example.demo_03.feature.home.HomeTab
 import com.example.demo_03.navigation.AppRoute
 import com.example.demo_03.navigation.LocalAppNavController
 import com.example.demo_03.navigation.navigateReplacingLogin
@@ -34,7 +35,7 @@ fun LoginRoute() {
         parameters = {
             parametersOf(
                 {
-                    navController.navigateReplacingLogin(AppRoute.HomeFeed)
+                    navController.navigateReplacingLogin(AppRoute.home(HomeTab.Feed))
                 },
             )
         },

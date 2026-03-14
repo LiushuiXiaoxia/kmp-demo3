@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import com.example.demo_03.core.initLogger
 import com.example.demo_03.di.initKoin
 import com.example.demo_03.feature.home.HomeTab
@@ -26,6 +27,7 @@ import com.example.demo_03.navigation.LocalAppNavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 
 @Composable
@@ -87,26 +89,7 @@ private fun AppNavHost(navController: NavHostController) {
     ) {
         splashDestination()
         loginDestination()
-        homeDestination(
-            route = AppRoute.HomeFeed,
-            tab = HomeTab.Feed,
-            deepLink = DeepLinkRegistry.HomeFeed,
-        )
-        homeDestination(
-            route = AppRoute.HomeDiscover,
-            tab = HomeTab.Discover,
-            deepLink = DeepLinkRegistry.HomeDiscover,
-        )
-        homeDestination(
-            route = AppRoute.HomeMessages,
-            tab = HomeTab.Messages,
-            deepLink = DeepLinkRegistry.HomeMessages,
-        )
-        homeDestination(
-            route = AppRoute.HomeProfile,
-            tab = HomeTab.Profile,
-            deepLink = DeepLinkRegistry.HomeProfile,
-        )
+        homeDestination()
     }
 }
 
@@ -137,16 +120,25 @@ private fun NavGraphBuilder.loginDestination() {
 }
 
 private fun NavGraphBuilder.homeDestination(
-    route: String,
-    tab: HomeTab,
-    deepLink: String,
 ) {
     composable(
-        route = route,
-        deepLinks = listOf(
-            navDeepLink { uriPattern = deepLink },
+        route = AppRoute.Home,
+        arguments = listOf(
+            navArgument(AppRoute.HomeTabArg) {
+                type = NavType.StringType
+                defaultValue = HomeTab.Feed.routeSegment
+            },
         ),
-    ) {
-        HomeRoute(selectedTab = tab)
+        deepLinks = listOf(
+            navDeepLink { uriPattern = DeepLinkRegistry.HomeFeed },
+            navDeepLink { uriPattern = DeepLinkRegistry.HomeDiscover },
+            navDeepLink { uriPattern = DeepLinkRegistry.HomeMessages },
+            navDeepLink { uriPattern = DeepLinkRegistry.HomeProfile },
+        ),
+    ) { backStackEntry ->
+        val selectedTab = HomeTab.fromRoute(
+            backStackEntry.arguments?.getString(AppRoute.HomeTabArg),
+        )
+        HomeRoute(initialTab = selectedTab)
     }
 }

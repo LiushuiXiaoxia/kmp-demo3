@@ -7,18 +7,11 @@ import com.example.demo_03.feature.home.HomeTab
 object AppRoute {
     const val Splash = "splash"
     const val Login = "login"
-    const val HomeFeed = "home/feed"
-    const val HomeDiscover = "home/discover"
-    const val HomeMessages = "home/messages"
-    const val HomeProfile = "home/profile"
+    const val HomeTabArg = "tab"
+    const val Home = "home/{$HomeTabArg}"
 
     fun home(tab: HomeTab): String {
-        return when (tab) {
-            HomeTab.Feed -> HomeFeed
-            HomeTab.Discover -> HomeDiscover
-            HomeTab.Messages -> HomeMessages
-            HomeTab.Profile -> HomeProfile
-        }
+        return "home/${tab.routeSegment}"
     }
 
     fun fromDeepLink(url: String): String? {
@@ -29,10 +22,10 @@ object AppRoute {
 
         return when (normalized) {
             "login" -> Login
-            "home/feed" -> HomeFeed
-            "home/discover" -> HomeDiscover
-            "home/messages" -> HomeMessages
-            "home/profile" -> HomeProfile
+            "home/feed" -> home(HomeTab.Feed)
+            "home/discover" -> home(HomeTab.Discover)
+            "home/messages" -> home(HomeTab.Messages)
+            "home/profile" -> home(HomeTab.Profile)
             else -> null
         }
     }
@@ -63,12 +56,6 @@ fun NavHostController.navigateReplacingLogin(route: String) {
         popUpTo(AppRoute.Login) {
             inclusive = true
         }
-    }
-}
-
-fun NavHostController.navigateHomeTab(tab: HomeTab) {
-    navigate(AppRoute.home(tab)) {
-        launchSingleTop = true
     }
 }
 
