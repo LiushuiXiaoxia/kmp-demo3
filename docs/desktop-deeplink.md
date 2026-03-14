@@ -1,21 +1,21 @@
 # Desktop Deeplink
 
-Desktop deeplink support in this project has two parts:
+这个项目的桌面端 deeplink 支持分为两部分：
 
-1. The app can consume `demo03://...` from startup arguments.
-2. The app can handle URI open events while already running via `Desktop.setOpenURIHandler()` when the platform supports it.
+1. 应用可以从启动参数中接收 `demo03://...`
+2. 当平台支持时，应用已经在运行中也可以通过 `Desktop.setOpenURIHandler()` 处理新的 URI 打开事件
 
 ## macOS
 
-The packaged app declares the `demo03` URL scheme in the generated `Info.plist`.
+打包后的应用会在生成的 `Info.plist` 中声明 `demo03` URL Scheme。
 
-Build:
+构建：
 
 ```bash
 ./gradlew :composeApp:packageDmg
 ```
 
-Run the packaged app after installation, then open:
+安装并运行打包后的应用后，执行：
 
 ```bash
 open "demo03://app/login"
@@ -23,13 +23,13 @@ open "demo03://app/login"
 
 ## Linux
 
-Register the installed desktop executable as a scheme handler:
+把已安装的桌面可执行文件注册为 scheme handler：
 
 ```bash
 ./scripts/register-demo03-scheme-linux.sh /absolute/path/to/app-executable
 ```
 
-Then test:
+然后测试：
 
 ```bash
 xdg-open "demo03://app/login"
@@ -37,13 +37,13 @@ xdg-open "demo03://app/login"
 
 ## Windows
 
-Register the installed `.exe` as a scheme handler:
+把已安装的 `.exe` 注册为 scheme handler：
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\register-demo03-scheme-windows.ps1 -AppExecutable "C:\Path\To\Demo03.exe"
 ```
 
-Then test:
+然后测试：
 
 ```powershell
 start "demo03://app/login"
