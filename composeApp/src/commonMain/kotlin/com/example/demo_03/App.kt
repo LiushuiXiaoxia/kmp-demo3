@@ -33,7 +33,7 @@ import com.example.demo_03.navigation.LocalAppNavController
 
 @Composable
 fun App(appContext: AppContext) {
-    initKoin()
+    initKoin(appContext)
     val navController = rememberNavController()
 
     LaunchedEffect(Unit) {
