@@ -37,6 +37,7 @@ import com.example.demo_03.data.FeedPost
 import com.example.demo_03.feature.home.components.PageCard
 import com.example.demo_03.navigation.AppRoute
 import com.example.demo_03.navigation.LocalAppNavController
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -238,7 +239,7 @@ private fun FeedPagePreview() {
     MaterialTheme {
         FeedPage(
             state = FeedState(
-                posts = listOf(
+                posts = persistentListOf(
                     FeedPost(
                         id = 1,
                         title = "多端动态列表的交互优化",

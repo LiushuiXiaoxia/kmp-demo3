@@ -7,11 +7,14 @@ import com.example.demo_03.data.PostRepository
 import com.example.demo_03.data.remote.awaitSuccessOrNull
 import com.example.demo_03.data.remote.onError
 import com.example.demo_03.data.remote.onFailureToast
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.onStart
 
 data class FeedState(
     val title: String = "今天的重点",
-    val posts: List<FeedPost> = emptyList(),
+    val posts: ImmutableList<FeedPost> = persistentListOf(),
     val isRefreshing: Boolean = false,
     val isLoadingMore: Boolean = false,
     val errorMessage: String? = null,
@@ -60,7 +63,7 @@ class FeedViewModel(
                         copy(
                             isRefreshing = false,
                             errorMessage = error.message,
-                            posts = emptyList(),
+                            posts = persistentListOf(),
                             endReached = false,
                         )
                     }
@@ -71,7 +74,7 @@ class FeedViewModel(
             nextPage = 2
             setState {
                 copy(
-                    posts = posts,
+                    posts = posts.toImmutableList(),
                     isRefreshing = false,
                     isLoadingMore = false,
                     errorMessage = null,
@@ -113,7 +116,7 @@ class FeedViewModel(
             nextPage += 1
             setState {
                 copy(
-                    posts = this.posts + posts,
+                    posts = (this.posts + posts).toImmutableList(),
                     isLoadingMore = false,
                     loadMoreErrorMessage = null,
                     endReached = posts.size < pageSize,

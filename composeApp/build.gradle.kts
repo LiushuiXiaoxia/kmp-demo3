@@ -73,6 +73,7 @@ kotlin {
                 implementation(libs.androidx.lifecycle.runtimeCompose)
                 implementation(libs.androidx.navigation.compose)
                 implementation(libs.kotlinx.coroutinesCore)
+                implementation(libs.kotlinx.collections.immutable)
                 implementation(libs.kotlinx.serialization.json)
                 implementation(libs.napier)
                 implementation(libs.koin.core)
