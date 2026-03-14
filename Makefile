@@ -11,7 +11,7 @@ ANDROID_APP_ID ?= com.example.demo_03
 ANDROID_MAIN_ACTIVITY ?= .MainActivity
 ANDROID_APK_DIR ?= $(ANDROID_APP_MODULE)/build/outputs/apk/debug
 
-.PHONY: help gradle-tasks clean test verify android-build android-launch desktop-run desktop-package desktop-package-dmg desktop-package-msi desktop-package-deb ios-open
+.PHONY: help gradle-tasks clean test verify android-build android-launch desktop-run web-run web-dist desktop-package desktop-package-dmg desktop-package-msi desktop-package-deb ios-open
 
 help: ## Show available commands
 	@printf "Common commands for Demo03\n\n"
@@ -69,3 +69,9 @@ desktop-package-deb: ## Build Debian package
 
 ios-open: ## Open the iOS project in Xcode
 	open $(IOS_PROJECT)
+
+web-run: ## Run the web app in the browser
+	$(GRADLEW) :$(COMPOSE_MODULE):wasmJsBrowserDevelopmentRun
+
+web-dist: ## Build the web distribution bundle
+	$(GRADLEW) :$(COMPOSE_MODULE):wasmJsBrowserDistribution

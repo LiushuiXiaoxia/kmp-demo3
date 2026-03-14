@@ -1,4 +1,5 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
@@ -18,6 +19,7 @@ tasks.withType<KotlinCompilationTask<*>>().configureEach {
     }
 }
 
+@OptIn(ExperimentalWasmDsl::class)
 kotlin {
     android {
         namespace = "com.example.demo_03.shared"
@@ -30,6 +32,11 @@ kotlin {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_11)
         }
+    }
+
+    wasmJs {
+        browser()
+        binaries.executable()
     }
 
     listOf(
@@ -96,6 +103,11 @@ kotlin {
                 implementation(compose.desktop.currentOs)
                 implementation(libs.kotlinx.coroutinesSwing)
                 implementation(libs.ktor.client.java)
+            }
+        }
+        wasmJsMain {
+            dependencies {
+                implementation(libs.ktor.client.cio)
             }
         }
     }

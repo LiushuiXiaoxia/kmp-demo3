@@ -1,6 +1,6 @@
 # Demo03
 
-`Demo03` 是一个基于 Kotlin Multiplatform 和 Compose Multiplatform 的多端示例工程，当前目标平台包括 Android、iOS 和 Desktop(JVM)。项目采用共享 UI + 平台宿主的结构，目前已经具备会话持久化、内容缓存回退、统一网络配置、共享层测试和基础工程校验链路。
+`Demo03` 是一个基于 Kotlin Multiplatform 和 Compose Multiplatform 的多端示例工程，当前目标平台包括 Android、iOS、Desktop(JVM) 和 Web(WasmJs)。项目采用共享 UI + 平台宿主的结构，目前已经具备会话持久化、内容缓存回退、统一网络配置、共享层测试和基础工程校验链路。
 
 ## 项目概览
 
@@ -8,9 +8,10 @@
 - 包名：
   - Android 应用：`com.example.demo_03`
   - 共享模块：`com.example.demo_03.shared`
-- 支持平台：Android、iOS、Desktop(JVM)
+- 支持平台：Android、iOS、Desktop(JVM)、Web(WasmJs)
 - 桌面应用名称：`Demo03`
 - 桌面 URL Scheme：`demo03://`
+- Web 运行方式：浏览器 + WasmJs
 
 ## 当前已实现能力
 
@@ -35,6 +36,7 @@
   - `demo03://app/home/messages`
   - `demo03://app/home/profile`
   - `demo03://app/feed/detail/{id}`
+- Web 支持通过 URL hash 传入 deeplink，例如 `#demo03://app/home/feed`
 
 ## 技术栈
 
@@ -74,6 +76,8 @@
   - iOS 平台实现与 `MainViewController`
 - `composeApp/src/jvmMain/kotlin`
   - Desktop 入口与 URI 处理
+- `composeApp/src/wasmJsMain/kotlin`
+  - Web 平台实现、浏览器入口与本地存储适配
 - `androidApp/src/main`
   - AndroidManifest、`MainActivity` 等 Android 宿主代码
 - `iosApp/iosApp`
@@ -91,6 +95,7 @@
 - `PostRepository` 通过远端数据源 + 本地缓存数据源提供内容
 - `AppRoute` 统一描述路由与 deeplink 映射
 - `initKoin()` 在应用启动时初始化依赖容器
+- `wasmJsMain` 提供 Web 平台的 `actual` 实现和浏览器入口
 
 ## 构建与运行
 
@@ -146,6 +151,22 @@ adb shell am start -a android.intent.action.VIEW -d "demo03://app/home/profile" 
 ./gradlew :composeApp:packageDeb
 ```
 
+### Web
+
+本地启动 Web 版：
+
+```bash
+./gradlew :composeApp:wasmJsBrowserDevelopmentRun
+make web-run
+```
+
+构建 Web 发布产物：
+
+```bash
+./gradlew :composeApp:wasmJsBrowserDistribution
+make web-dist
+```
+
 ### iOS
 
 在 Xcode 中打开 [`iosApp`](/Users/leon/ws/kmm/demo03/iosApp)，运行 `iosApp` target。
@@ -172,6 +193,9 @@ make verify
 - Desktop 支持两种方式处理 deeplink：
   - 启动参数传入 URI
   - 应用运行中通过 `Desktop.setOpenURIHandler()` 接收 URI
+- Web 支持通过 URL hash 触发启动 deeplink：
+  - `http://localhost:8080/#demo03://app/login`
+  - `http://localhost:8080/#demo03://app/feed/detail/1`
 - 受保护 deeplink 在未登录时会先进入 `Login`，登录成功后自动回跳目标页面
 - Desktop 平台的 scheme 注册方式见 [`docs/desktop-deeplink.md`](/Users/leon/ws/kmm/demo03/docs/desktop-deeplink.md)
 
@@ -196,6 +220,7 @@ open "demo03://app/home/profile"
 - 当前仍使用 `jsonplaceholder` 作为演示数据源
 - `verify` 已覆盖共享层格式约束、编译和测试，但尚未包含发布签名与商店上架流程
 - iOS / Desktop 的正式发布脚本仍需按目标环境继续补齐
+- Web 当前使用浏览器 `localStorage` 作为持久化与缓存存储
 
 ## 后续可扩展方向
 

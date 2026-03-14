@@ -47,6 +47,7 @@ tasks.register("verify") {
     dependsOn(
         checkSourceFormatting,
         ":composeApp:compileKotlinJvm",
+        ":composeApp:compileKotlinWasmJs",
         ":composeApp:compileAndroidMain",
         ":composeApp:allTests",
     )
