@@ -76,6 +76,25 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "com.example.demo_03"
             packageVersion = "1.0.0"
+
+            macOS {
+                bundleID = "com.example.demo03.desktop"
+                infoPlist {
+                    extraKeysRawXml = """
+                        <key>CFBundleURLTypes</key>
+                        <array>
+                            <dict>
+                                <key>CFBundleURLName</key>
+                                <string>com.example.demo03.desktop</string>
+                                <key>CFBundleURLSchemes</key>
+                                <array>
+                                    <string>demo03</string>
+                                </array>
+                            </dict>
+                        </array>
+                    """.trimIndent()
+                }
+            }
         }
     }
 }
