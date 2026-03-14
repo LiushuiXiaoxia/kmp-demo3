@@ -9,6 +9,13 @@ sealed class AppRoute(val route: String) {
 
     data object Login : AppRoute("login")
 
+    data class FeedDetail(val postId: Int) : AppRoute("feed/detail/$postId") {
+        companion object {
+            const val PostIdArg = "postId"
+            const val pattern = "feed/detail/{$PostIdArg}"
+        }
+    }
+
     data class Home(val tab: HomeTab) : AppRoute("home/${tab.routeSegment}") {
         companion object {
             const val TabArg = "tab"

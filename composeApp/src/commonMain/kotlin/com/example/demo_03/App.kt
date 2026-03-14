@@ -40,6 +40,7 @@ import com.example.demo_03.core.initLogger
 import com.example.demo_03.di.initKoin
 import com.example.demo_03.feature.home.HomeRoute
 import com.example.demo_03.feature.home.HomeTab
+import com.example.demo_03.feature.home.feed.FeedDetailRoute
 import com.example.demo_03.feature.login.LoginRoute
 import com.example.demo_03.feature.splash.SplashRoute
 import com.example.demo_03.navigation.AppRoute
@@ -148,6 +149,7 @@ private fun AppNavHost(navController: NavHostController) {
         splashDestination()
         loginDestination()
         homeDestination()
+        feedDetailDestination()
     }
 }
 
@@ -198,5 +200,21 @@ private fun NavGraphBuilder.homeDestination(
             backStackEntry.arguments?.read { getString(AppRoute.Home.TabArg) },
         )
         HomeRoute(initialTab = selectedTab)
+    }
+}
+
+private fun NavGraphBuilder.feedDetailDestination() {
+    composable(
+        route = AppRoute.FeedDetail.pattern,
+        arguments = listOf(
+            navArgument(AppRoute.FeedDetail.PostIdArg) {
+                type = NavType.IntType
+            },
+        ),
+    ) { backStackEntry ->
+        val postId = backStackEntry.arguments?.read {
+            getInt(AppRoute.FeedDetail.PostIdArg)
+        } ?: return@composable
+        FeedDetailRoute(postId = postId)
     }
 }

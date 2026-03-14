@@ -35,6 +35,9 @@ val networkModule = module {
     }
 
     single {
-        PostRepository(postApi = get())
+        PostRepository(
+            postApi = get(),
+            httpClient = get(),
+        )
     }
 }

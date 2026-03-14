@@ -250,6 +250,7 @@ private fun HomePagePreview() {
                 FeedPage(
                     state = FeedState(),
                     onIntent = {},
+                    onPostClick = {},
                 )
             },
             discoverContent = {
