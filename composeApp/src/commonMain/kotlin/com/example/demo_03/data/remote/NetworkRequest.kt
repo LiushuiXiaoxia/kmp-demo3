@@ -6,7 +6,12 @@ import io.ktor.client.plugins.ResponseException
 import io.ktor.client.plugins.ServerResponseException
 import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.ktor.http.HttpStatusCode
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.TimeoutCancellationException
+import com.example.demo_03.toast.ToastKit
 
 sealed interface NetworkResult<out T> {
     data class Success<T>(
@@ -18,7 +23,7 @@ sealed interface NetworkResult<out T> {
     ) : NetworkResult<Nothing>
 }
 
-inline fun <T, R> NetworkResult<T>.map(transform: (T) -> R): NetworkResult<R> {
+inline fun <T, R> NetworkResult<T>.mapSuccess(transform: (T) -> R): NetworkResult<R> {
     return when (this) {
         is NetworkResult.Success -> NetworkResult.Success(transform(data))
         is NetworkResult.Error -> this
@@ -56,25 +61,64 @@ data class BusinessFailure(
     val code: String? = null,
 )
 
-suspend inline fun <T> safeApiCall(
+inline fun <T> safeApiCall(
     crossinline request: suspend () -> T,
     crossinline validate: (T) -> BusinessFailure? = { null },
-): NetworkResult<T> {
-    return try {
+): Flow<NetworkResult<T>> = flow {
+    try {
         val data = request()
         val businessFailure = validate(data)
-        if (businessFailure != null) {
-            NetworkResult.Error(
-                NetworkError.Business(
-                    code = businessFailure.code,
-                    message = businessFailure.message,
-                ),
-            )
-        } else {
-            NetworkResult.Success(data)
-        }
+        emit(
+            if (businessFailure != null) {
+                NetworkResult.Error(
+                    NetworkError.Business(
+                        code = businessFailure.code,
+                        message = businessFailure.message,
+                    ),
+                )
+            } else {
+                NetworkResult.Success(data)
+            },
+        )
     } catch (throwable: Throwable) {
-        NetworkResult.Error(throwable.toNetworkError())
+        emit(NetworkResult.Error(throwable.toNetworkError()))
+    }
+}
+
+inline fun <T, R> Flow<NetworkResult<T>>.mapSuccess(
+    crossinline transform: suspend (T) -> R,
+): Flow<NetworkResult<R>> {
+    return transform { result ->
+        when (result) {
+            is NetworkResult.Success -> emit(NetworkResult.Success(transform(result.data)))
+            is NetworkResult.Error -> emit(result)
+        }
+    }
+}
+
+inline fun <T> Flow<NetworkResult<T>>.onSuccess(
+    crossinline action: suspend (T) -> Unit,
+): Flow<NetworkResult<T>> {
+    return onEach { result ->
+        if (result is NetworkResult.Success) {
+            action(result.data)
+        }
+    }
+}
+
+inline fun <T> Flow<NetworkResult<T>>.onError(
+    crossinline action: suspend (NetworkError) -> Unit,
+): Flow<NetworkResult<T>> {
+    return onEach { result ->
+        if (result is NetworkResult.Error) {
+            action(result.cause)
+        }
+    }
+}
+
+fun <T> Flow<NetworkResult<T>>.onFailureToast(): Flow<NetworkResult<T>> {
+    return onError { error ->
+        ToastKit.show(error.message)
     }
 }
 

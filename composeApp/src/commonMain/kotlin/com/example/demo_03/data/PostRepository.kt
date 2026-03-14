@@ -3,13 +3,14 @@ package com.example.demo_03.data
 import com.example.demo_03.data.remote.BusinessFailure
 import com.example.demo_03.data.remote.NetworkResult
 import com.example.demo_03.data.remote.PostApi
-import com.example.demo_03.data.remote.map
+import com.example.demo_03.data.remote.mapSuccess
 import com.example.demo_03.data.remote.safeApiCall
+import kotlinx.coroutines.flow.Flow
 
 class PostRepository(
     private val postApi: PostApi,
 ) {
-    suspend fun getFeaturedPostTitle(): NetworkResult<String> {
+    fun getFeaturedPostTitle(): Flow<NetworkResult<String>> {
         return safeApiCall(
             request = { postApi.getFeaturedPost() },
             validate = { post ->
@@ -19,6 +20,6 @@ class PostRepository(
                     null
                 }
             },
-        ).map { post -> post.title }
+        ).mapSuccess { post -> post.title }
     }
 }
