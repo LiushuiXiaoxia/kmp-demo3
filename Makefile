@@ -6,8 +6,12 @@ GRADLEW ?= ./gradlew
 ANDROID_APP_MODULE ?= androidApp
 COMPOSE_MODULE ?= composeApp
 IOS_PROJECT ?= iosApp/iosApp.xcodeproj
+ADB ?= adb
+ANDROID_APP_ID ?= com.example.demo_03
+ANDROID_MAIN_ACTIVITY ?= .MainActivity
+ANDROID_APK_DIR ?= $(ANDROID_APP_MODULE)/build/outputs/apk/debug
 
-.PHONY: help gradle-tasks clean test android-build android-install desktop-run desktop-package desktop-package-dmg desktop-package-msi desktop-package-deb ios-open
+.PHONY: help gradle-tasks clean test android-build android-launch desktop-run desktop-package desktop-package-dmg desktop-package-msi desktop-package-deb ios-open
 
 help: ## Show available commands
 	@printf "Common commands for Demo03\n\n"
@@ -22,11 +26,28 @@ clean: ## Clean Gradle build outputs
 test: ## Run shared tests
 	$(GRADLEW) :$(COMPOSE_MODULE):allTests
 
-android-build: ## Build Android debug APK
+android-build: ## Build Android debug APK, install it with adb, and launch the app
 	$(GRADLEW) :$(ANDROID_APP_MODULE):assembleDebug
+	@apk_path=$$(find $(ANDROID_APK_DIR) -type f -name '*.apk' | head -n 1); \
+	if [ -z "$$apk_path" ]; then \
+		echo "No APK found under $(ANDROID_APK_DIR)"; \
+		exit 1; \
+	fi; \
+	echo "Installing $$apk_path"; \
+	$(ADB) install -r "$$apk_path"; \
+	echo "Launching $(ANDROID_APP_ID)/$(ANDROID_MAIN_ACTIVITY)"; \
+	$(ADB) shell am start -n $(ANDROID_APP_ID)/$(ANDROID_MAIN_ACTIVITY)
 
-android-install: ## Install Android debug build to a connected device
-	$(GRADLEW) :$(ANDROID_APP_MODULE):installDebug
+android-launch: ## Install the built Android debug APK with adb and launch the app
+	@apk_path=$$(find $(ANDROID_APK_DIR) -type f -name '*.apk' | head -n 1); \
+	if [ -z "$$apk_path" ]; then \
+		echo "No APK found under $(ANDROID_APK_DIR). Run 'make android-build' first."; \
+		exit 1; \
+	fi; \
+	echo "Installing $$apk_path"; \
+	$(ADB) install -r "$$apk_path"; \
+	echo "Launching $(ANDROID_APP_ID)/$(ANDROID_MAIN_ACTIVITY)"; \
+	$(ADB) shell am start -n $(ANDROID_APP_ID)/$(ANDROID_MAIN_ACTIVITY)
 
 desktop-run: ## Run the desktop app
 	$(GRADLEW) :$(COMPOSE_MODULE):run
