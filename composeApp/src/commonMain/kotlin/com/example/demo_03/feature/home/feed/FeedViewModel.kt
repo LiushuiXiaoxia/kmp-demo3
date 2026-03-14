@@ -1,14 +1,13 @@
 package com.example.demo_03.feature.home.feed
 
 import com.example.demo_03.data.PostRepository
+import com.example.demo_03.data.remote.getSuccessOrNull
 import com.example.demo_03.data.remote.onError
 import com.example.demo_03.data.remote.onFailureToast
-import com.example.demo_03.data.remote.onSuccess
 import com.example.demo_03.core.MviViewModel
 import com.example.demo_03.core.logLifecycle
 import com.example.demo_03.getPlatform
 import com.example.demo_03.toast.ToastKit
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onStart
 
 data class FeedState(
@@ -38,35 +37,24 @@ class FeedViewModel(
     private fun refresh() {
         logLifecycle("Feed", "refresh")
         launch {
-            postRepository.getFeaturedPostTitle()
+            val title = postRepository.getFeaturedPostTitle()
                 .onStart {
-                    setState {
-                        copy(
-                            isLoading = true,
-                            errorMessage = null,
-                        )
-                    }
-                }
-                .onSuccess { title ->
-                    setState {
-                        copy(
-                            summary = "来自网络的标题: $title\n当前平台: ${getPlatform().name}",
-                            isLoading = false,
-                            errorMessage = null,
-                        )
-                    }
-                    ToastKit.show("刷新成功")
+                    setState { copy(isLoading = true, errorMessage = null) }
                 }
                 .onError { error ->
-                    setState {
-                        copy(
-                            isLoading = false,
-                            errorMessage = error.message,
-                        )
-                    }
+                    setState { copy(isLoading = false, errorMessage = error.message) }
                 }
                 .onFailureToast()
-                .collect()
+                .getSuccessOrNull() ?: return@launch
+
+            setState {
+                copy(
+                    summary = "来自网络的标题: $title\n当前平台: ${getPlatform().name}",
+                    isLoading = false,
+                    errorMessage = null,
+                )
+            }
+            ToastKit.show("刷新成功")
         }
     }
 }

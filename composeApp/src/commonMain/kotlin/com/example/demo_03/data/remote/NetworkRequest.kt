@@ -6,12 +6,13 @@ import io.ktor.client.plugins.ResponseException
 import io.ktor.client.plugins.ServerResponseException
 import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.ktor.http.HttpStatusCode
+import com.example.demo_03.toast.ToastKit
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.transform
-import kotlinx.coroutines.TimeoutCancellationException
-import com.example.demo_03.toast.ToastKit
 
 sealed interface NetworkResult<out T> {
     data class Success<T>(
@@ -119,6 +120,13 @@ inline fun <T> Flow<NetworkResult<T>>.onError(
 fun <T> Flow<NetworkResult<T>>.onFailureToast(): Flow<NetworkResult<T>> {
     return onError { error ->
         ToastKit.show(error.message)
+    }
+}
+
+suspend fun <T> Flow<NetworkResult<T>>.getSuccessOrNull(): T? {
+    return when (val result = first()) {
+        is NetworkResult.Success -> result.data
+        is NetworkResult.Error -> null
     }
 }
 
