@@ -10,6 +10,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavHostController
 import com.example.demo_03.core.initLogger
 import com.example.demo_03.di.initKoin
 import com.example.demo_03.feature.home.HomeTab
@@ -17,6 +19,7 @@ import com.example.demo_03.feature.home.HomeRoute
 import com.example.demo_03.feature.login.LoginRoute
 import com.example.demo_03.feature.splash.SplashRoute
 import com.example.demo_03.navigation.AppRoute
+import com.example.demo_03.navigation.DeepLinkRegistry
 import com.example.demo_03.navigation.DeepLinkBus
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -28,6 +31,14 @@ fun App() {
     initKoin()
     val navController = rememberNavController()
 
+    AppInitializer(navController)
+    AppContainer {
+        AppNavHost(navController)
+    }
+}
+
+@Composable
+private fun AppInitializer(navController: NavHostController) {
     LaunchedEffect(Unit) {
         initLogger()
     }
@@ -40,7 +51,10 @@ fun App() {
             }
         }
     }
+}
 
+@Composable
+private fun AppContainer(content: @Composable () -> Unit) {
     MaterialTheme {
         Surface {
             Box(
@@ -54,144 +68,128 @@ fun App() {
                             )
                         )
                     )
-            ) {
-                NavHost(
-                    navController = navController,
-                    startDestination = AppRoute.Splash,
-                ) {
-                    composable(
-                        route = AppRoute.Splash,
-                        deepLinks = listOf(
-                            navDeepLink { uriPattern = com.example.demo_03.navigation.DeepLinkRegistry.HomeFeed },
-                            navDeepLink { uriPattern = com.example.demo_03.navigation.DeepLinkRegistry.HomeDiscover },
-                            navDeepLink { uriPattern = com.example.demo_03.navigation.DeepLinkRegistry.HomeMessages },
-                            navDeepLink { uriPattern = com.example.demo_03.navigation.DeepLinkRegistry.HomeProfile },
-                            navDeepLink { uriPattern = com.example.demo_03.navigation.DeepLinkRegistry.Login },
-                        ),
-                    ) {
-                        SplashRoute(
-                            onResolved = { isLoggedIn ->
-                                navController.navigate(
-                                    if (isLoggedIn) AppRoute.HomeFeed else AppRoute.Login
-                                ) {
-                                    popUpTo(AppRoute.Splash) {
-                                        inclusive = true
-                                    }
-                                }
-                            },
-                        )
-                    }
+            ) { content() }
+        }
+    }
+}
 
-                    composable(
-                        route = AppRoute.Login,
-                        deepLinks = listOf(
-                            navDeepLink { uriPattern = com.example.demo_03.navigation.DeepLinkRegistry.Login },
-                        ),
-                    ) {
-                        LoginRoute(
-                            onLoginSuccess = {
-                                navController.navigate(AppRoute.HomeFeed) {
-                                    popUpTo(AppRoute.Login) {
-                                        inclusive = true
-                                    }
-                                }
-                            },
-                        )
-                    }
+@Composable
+private fun AppNavHost(navController: NavHostController) {
+    NavHost(
+        navController = navController,
+        startDestination = AppRoute.Splash,
+    ) {
+        splashDestination(navController)
+        loginDestination(navController)
+        homeDestination(
+            navController = navController,
+            route = AppRoute.HomeFeed,
+            tab = HomeTab.Feed,
+            deepLink = DeepLinkRegistry.HomeFeed,
+        )
+        homeDestination(
+            navController = navController,
+            route = AppRoute.HomeDiscover,
+            tab = HomeTab.Discover,
+            deepLink = DeepLinkRegistry.HomeDiscover,
+        )
+        homeDestination(
+            navController = navController,
+            route = AppRoute.HomeMessages,
+            tab = HomeTab.Messages,
+            deepLink = DeepLinkRegistry.HomeMessages,
+        )
+        homeDestination(
+            navController = navController,
+            route = AppRoute.HomeProfile,
+            tab = HomeTab.Profile,
+            deepLink = DeepLinkRegistry.HomeProfile,
+        )
+    }
+}
 
-                    composable(
-                        route = AppRoute.HomeFeed,
-                        deepLinks = listOf(
-                            navDeepLink { uriPattern = com.example.demo_03.navigation.DeepLinkRegistry.HomeFeed },
-                        ),
-                    ) {
-                        HomeRoute(
-                            selectedTab = HomeTab.Feed,
-                            onNavigateTab = { tab ->
-                                navController.navigate(AppRoute.home(tab)) {
-                                    launchSingleTop = true
-                                }
-                            },
-                            onLogout = {
-                                navController.navigate(AppRoute.Login) {
-                                    popUpTo(AppRoute.Splash) {
-                                        inclusive = true
-                                    }
-                                }
-                            },
-                        )
-                    }
+private fun NavGraphBuilder.splashDestination(navController: NavHostController) {
+    composable(
+        route = AppRoute.Splash,
+        deepLinks = listOf(
+            navDeepLink { uriPattern = DeepLinkRegistry.HomeFeed },
+            navDeepLink { uriPattern = DeepLinkRegistry.HomeDiscover },
+            navDeepLink { uriPattern = DeepLinkRegistry.HomeMessages },
+            navDeepLink { uriPattern = DeepLinkRegistry.HomeProfile },
+            navDeepLink { uriPattern = DeepLinkRegistry.Login },
+        ),
+    ) {
+        SplashRoute(
+            onResolved = { isLoggedIn ->
+                navController.navigateReplacingSplash(
+                    if (isLoggedIn) AppRoute.HomeFeed else AppRoute.Login,
+                )
+            },
+        )
+    }
+}
 
-                    composable(
-                        route = AppRoute.HomeDiscover,
-                        deepLinks = listOf(
-                            navDeepLink { uriPattern = com.example.demo_03.navigation.DeepLinkRegistry.HomeDiscover },
-                        ),
-                    ) {
-                        HomeRoute(
-                            selectedTab = HomeTab.Discover,
-                            onNavigateTab = { tab ->
-                                navController.navigate(AppRoute.home(tab)) {
-                                    launchSingleTop = true
-                                }
-                            },
-                            onLogout = {
-                                navController.navigate(AppRoute.Login) {
-                                    popUpTo(AppRoute.Splash) {
-                                        inclusive = true
-                                    }
-                                }
-                            },
-                        )
-                    }
+private fun NavGraphBuilder.loginDestination(navController: NavHostController) {
+    composable(
+        route = AppRoute.Login,
+        deepLinks = listOf(
+            navDeepLink { uriPattern = DeepLinkRegistry.Login },
+        ),
+    ) {
+        LoginRoute(
+            onLoginSuccess = {
+                navController.navigateReplacingLogin(AppRoute.HomeFeed)
+            },
+        )
+    }
+}
 
-                    composable(
-                        route = AppRoute.HomeMessages,
-                        deepLinks = listOf(
-                            navDeepLink { uriPattern = com.example.demo_03.navigation.DeepLinkRegistry.HomeMessages },
-                        ),
-                    ) {
-                        HomeRoute(
-                            selectedTab = HomeTab.Messages,
-                            onNavigateTab = { tab ->
-                                navController.navigate(AppRoute.home(tab)) {
-                                    launchSingleTop = true
-                                }
-                            },
-                            onLogout = {
-                                navController.navigate(AppRoute.Login) {
-                                    popUpTo(AppRoute.Splash) {
-                                        inclusive = true
-                                    }
-                                }
-                            },
-                        )
-                    }
+private fun NavGraphBuilder.homeDestination(
+    navController: NavHostController,
+    route: String,
+    tab: HomeTab,
+    deepLink: String,
+) {
+    composable(
+        route = route,
+        deepLinks = listOf(
+            navDeepLink { uriPattern = deepLink },
+        ),
+    ) {
+        HomeRoute(
+            selectedTab = tab,
+            onNavigateTab = navController::navigateHomeTab,
+            onLogout = navController::navigateToLogin,
+        )
+    }
+}
 
-                    composable(
-                        route = AppRoute.HomeProfile,
-                        deepLinks = listOf(
-                            navDeepLink { uriPattern = com.example.demo_03.navigation.DeepLinkRegistry.HomeProfile },
-                        ),
-                    ) {
-                        HomeRoute(
-                            selectedTab = HomeTab.Profile,
-                            onNavigateTab = { tab ->
-                                navController.navigate(AppRoute.home(tab)) {
-                                    launchSingleTop = true
-                                }
-                            },
-                            onLogout = {
-                                navController.navigate(AppRoute.Login) {
-                                    popUpTo(AppRoute.Splash) {
-                                        inclusive = true
-                                    }
-                                }
-                            },
-                        )
-                    }
-                }
-            }
+private fun NavHostController.navigateReplacingSplash(route: String) {
+    navigate(route) {
+        popUpTo(AppRoute.Splash) {
+            inclusive = true
+        }
+    }
+}
+
+private fun NavHostController.navigateReplacingLogin(route: String) {
+    navigate(route) {
+        popUpTo(AppRoute.Login) {
+            inclusive = true
+        }
+    }
+}
+
+private fun NavHostController.navigateHomeTab(tab: HomeTab) {
+    navigate(AppRoute.home(tab)) {
+        launchSingleTop = true
+    }
+}
+
+private fun NavHostController.navigateToLogin() {
+    navigate(AppRoute.Login) {
+        popUpTo(AppRoute.Splash) {
+            inclusive = true
         }
     }
 }
