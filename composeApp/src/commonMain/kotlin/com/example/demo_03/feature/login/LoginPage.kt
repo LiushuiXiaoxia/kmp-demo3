@@ -21,15 +21,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.demo_03.core.ScreenLifecycleLogger
+import com.example.demo_03.navigation.AppRoute
+import com.example.demo_03.navigation.LocalAppNavController
+import com.example.demo_03.navigation.navigateReplacingLogin
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
 @Composable
-fun LoginRoute(
-    onLoginSuccess: () -> Unit,
-) {
+fun LoginRoute() {
+    val navController = LocalAppNavController.current
     val viewModel = koinViewModel<LoginViewModel>(
-        parameters = { parametersOf(onLoginSuccess) },
+        parameters = {
+            parametersOf(
+                {
+                    navController.navigateReplacingLogin(AppRoute.HomeFeed)
+                },
+            )
+        },
     )
     val state by viewModel.state.collectAsState()
 

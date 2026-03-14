@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -21,6 +22,7 @@ import com.example.demo_03.feature.splash.SplashRoute
 import com.example.demo_03.navigation.AppRoute
 import com.example.demo_03.navigation.DeepLinkRegistry
 import com.example.demo_03.navigation.DeepLinkBus
+import com.example.demo_03.navigation.LocalAppNavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -32,8 +34,12 @@ fun App() {
     val navController = rememberNavController()
 
     AppInitializer(navController)
-    AppContainer {
-        AppNavHost(navController)
+    CompositionLocalProvider(
+        LocalAppNavController provides navController,
+    ) {
+        AppContainer {
+            AppNavHost(navController)
+        }
     }
 }
 
@@ -79,28 +85,24 @@ private fun AppNavHost(navController: NavHostController) {
         navController = navController,
         startDestination = AppRoute.Splash,
     ) {
-        splashDestination(navController)
-        loginDestination(navController)
+        splashDestination()
+        loginDestination()
         homeDestination(
-            navController = navController,
             route = AppRoute.HomeFeed,
             tab = HomeTab.Feed,
             deepLink = DeepLinkRegistry.HomeFeed,
         )
         homeDestination(
-            navController = navController,
             route = AppRoute.HomeDiscover,
             tab = HomeTab.Discover,
             deepLink = DeepLinkRegistry.HomeDiscover,
         )
         homeDestination(
-            navController = navController,
             route = AppRoute.HomeMessages,
             tab = HomeTab.Messages,
             deepLink = DeepLinkRegistry.HomeMessages,
         )
         homeDestination(
-            navController = navController,
             route = AppRoute.HomeProfile,
             tab = HomeTab.Profile,
             deepLink = DeepLinkRegistry.HomeProfile,
@@ -108,7 +110,7 @@ private fun AppNavHost(navController: NavHostController) {
     }
 }
 
-private fun NavGraphBuilder.splashDestination(navController: NavHostController) {
+private fun NavGraphBuilder.splashDestination() {
     composable(
         route = AppRoute.Splash,
         deepLinks = listOf(
@@ -119,33 +121,22 @@ private fun NavGraphBuilder.splashDestination(navController: NavHostController) 
             navDeepLink { uriPattern = DeepLinkRegistry.Login },
         ),
     ) {
-        SplashRoute(
-            onResolved = { isLoggedIn ->
-                navController.navigateReplacingSplash(
-                    if (isLoggedIn) AppRoute.HomeFeed else AppRoute.Login,
-                )
-            },
-        )
+        SplashRoute()
     }
 }
 
-private fun NavGraphBuilder.loginDestination(navController: NavHostController) {
+private fun NavGraphBuilder.loginDestination() {
     composable(
         route = AppRoute.Login,
         deepLinks = listOf(
             navDeepLink { uriPattern = DeepLinkRegistry.Login },
         ),
     ) {
-        LoginRoute(
-            onLoginSuccess = {
-                navController.navigateReplacingLogin(AppRoute.HomeFeed)
-            },
-        )
+        LoginRoute()
     }
 }
 
 private fun NavGraphBuilder.homeDestination(
-    navController: NavHostController,
     route: String,
     tab: HomeTab,
     deepLink: String,
@@ -156,40 +147,6 @@ private fun NavGraphBuilder.homeDestination(
             navDeepLink { uriPattern = deepLink },
         ),
     ) {
-        HomeRoute(
-            selectedTab = tab,
-            onNavigateTab = navController::navigateHomeTab,
-            onLogout = navController::navigateToLogin,
-        )
-    }
-}
-
-private fun NavHostController.navigateReplacingSplash(route: String) {
-    navigate(route) {
-        popUpTo(AppRoute.Splash) {
-            inclusive = true
-        }
-    }
-}
-
-private fun NavHostController.navigateReplacingLogin(route: String) {
-    navigate(route) {
-        popUpTo(AppRoute.Login) {
-            inclusive = true
-        }
-    }
-}
-
-private fun NavHostController.navigateHomeTab(tab: HomeTab) {
-    navigate(AppRoute.home(tab)) {
-        launchSingleTop = true
-    }
-}
-
-private fun NavHostController.navigateToLogin() {
-    navigate(AppRoute.Login) {
-        popUpTo(AppRoute.Splash) {
-            inclusive = true
-        }
+        HomeRoute(selectedTab = tab)
     }
 }

@@ -26,24 +26,24 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.demo_03.core.ScreenLifecycleLogger
+import com.example.demo_03.navigation.LocalAppNavController
+import com.example.demo_03.navigation.navigateHomeTab
+import com.example.demo_03.navigation.navigateToLogin
 import com.example.demo_03.session.SessionStore
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
 @Composable
-fun HomeRoute(
-    selectedTab: HomeTab,
-    onNavigateTab: (HomeTab) -> Unit,
-    onLogout: () -> Unit,
-) {
+fun HomeRoute(selectedTab: HomeTab) {
+    val navController = LocalAppNavController.current
     val sessionStore = koinInject<SessionStore>()
     val homeViewModel = koinViewModel<HomeViewModel>()
     val feedViewModel = koinViewModel<FeedViewModel>()
     val discoverViewModel = koinViewModel<DiscoverViewModel>()
     val messagesViewModel = koinViewModel<MessagesViewModel>()
     val profileViewModel = koinViewModel<ProfileViewModel>(
-        parameters = { parametersOf(onLogout) },
+        parameters = { parametersOf(navController::navigateToLogin) },
     )
 
     val homeState by homeViewModel.state.collectAsState()
@@ -69,7 +69,7 @@ fun HomeRoute(
         onHomeIntent = { intent ->
             homeViewModel.onIntent(intent)
             if (intent is HomeIntent.SelectTab) {
-                onNavigateTab(intent.tab)
+                navController.navigateHomeTab(intent.tab)
             }
         },
         onFeedIntent = feedViewModel::onIntent,

@@ -23,15 +23,25 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.demo_03.core.ScreenLifecycleLogger
+import com.example.demo_03.navigation.AppRoute
+import com.example.demo_03.navigation.LocalAppNavController
+import com.example.demo_03.navigation.navigateReplacingSplash
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
 @Composable
-fun SplashRoute(
-    onResolved: (Boolean) -> Unit,
-) {
+fun SplashRoute() {
+    val navController = LocalAppNavController.current
     val viewModel = koinViewModel<SplashViewModel>(
-        parameters = { parametersOf(onResolved) },
+        parameters = {
+            parametersOf(
+                { isLoggedIn: Boolean ->
+                    navController.navigateReplacingSplash(
+                        if (isLoggedIn) AppRoute.HomeFeed else AppRoute.Login,
+                    )
+                },
+            )
+        },
     )
     val state by viewModel.state.collectAsState()
 
