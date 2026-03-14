@@ -1,47 +1,71 @@
 package com.example.demo_03
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.safeContentPadding
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
-import org.jetbrains.compose.resources.painterResource
+import com.example.demo_03.feature.home.HomeRoute
+import com.example.demo_03.feature.login.LoginRoute
+import com.example.demo_03.feature.splash.SplashRoute
+import com.example.demo_03.session.SessionStore
 
-import demo03.composeapp.generated.resources.Res
-import demo03.composeapp.generated.resources.compose_multiplatform
+private enum class AppRoute {
+    Splash,
+    Login,
+    Home,
+}
 
 @Composable
 @Preview
 fun App() {
+    val sessionStore = remember { SessionStore() }
+    var route by rememberSaveable { androidx.compose.runtime.mutableStateOf(AppRoute.Splash) }
+
     MaterialTheme {
-        var showContent by remember { mutableStateOf(false) }
-        Column(
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.primaryContainer)
-                .safeContentPadding()
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Button(onClick = { showContent = !showContent }) {
-                Text("Click me!")
-            }
-            AnimatedVisibility(showContent) {
-                val greeting = remember { Greeting().greet() }
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Image(painterResource(Res.drawable.compose_multiplatform), null)
-                    Text("Compose: $greeting")
+        Surface {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color(0xFFF7F1E8),
+                                Color(0xFFE6EEF6),
+                            )
+                        )
+                    )
+            ) {
+                when (route) {
+                    AppRoute.Splash -> SplashRoute(
+                        sessionStore = sessionStore,
+                        onResolved = { isLoggedIn ->
+                            route = if (isLoggedIn) AppRoute.Home else AppRoute.Login
+                        },
+                    )
+
+                    AppRoute.Login -> LoginRoute(
+                        sessionStore = sessionStore,
+                        onLoginSuccess = {
+                            route = AppRoute.Home
+                        },
+                    )
+
+                    AppRoute.Home -> HomeRoute(
+                        sessionStore = sessionStore,
+                        onLogout = {
+                            route = AppRoute.Login
+                        },
+                    )
                 }
             }
         }
