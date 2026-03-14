@@ -15,7 +15,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -24,16 +23,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.demo_03.core.ScreenLifecycleLogger
-import com.example.demo_03.session.SessionStore
+import org.koin.compose.koinInject
+import org.koin.core.parameter.parametersOf
 
 @Composable
 fun SplashRoute(
-    sessionStore: SessionStore,
     onResolved: (Boolean) -> Unit,
 ) {
-    val viewModel = remember(sessionStore, onResolved) {
-        SplashViewModel(sessionStore, onResolved)
-    }
+    val viewModel = koinInject<SplashViewModel>(
+        parameters = { parametersOf(onResolved) },
+    )
     val state by viewModel.state.collectAsState()
 
     ScreenLifecycleLogger("Splash")

@@ -19,7 +19,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -27,19 +26,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.demo_03.core.ScreenLifecycleLogger
 import com.example.demo_03.session.SessionStore
+import org.koin.compose.koinInject
+import org.koin.core.parameter.parametersOf
 
 @Composable
 fun HomeRoute(
-    sessionStore: SessionStore,
     onLogout: () -> Unit,
 ) {
-    val homeViewModel = remember { HomeViewModel() }
-    val feedViewModel = remember { FeedViewModel() }
-    val discoverViewModel = remember { DiscoverViewModel() }
-    val messagesViewModel = remember { MessagesViewModel() }
-    val profileViewModel = remember(sessionStore, onLogout) {
-        ProfileViewModel(sessionStore, onLogout)
-    }
+    val sessionStore = koinInject<SessionStore>()
+    val homeViewModel = koinInject<HomeViewModel>()
+    val feedViewModel = koinInject<FeedViewModel>()
+    val discoverViewModel = koinInject<DiscoverViewModel>()
+    val messagesViewModel = koinInject<MessagesViewModel>()
+    val profileViewModel = koinInject<ProfileViewModel>(
+        parameters = { parametersOf(onLogout) },
+    )
 
     val homeState by homeViewModel.state.collectAsState()
     val sessionState by sessionStore.session.collectAsState()
