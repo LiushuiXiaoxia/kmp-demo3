@@ -1,12 +1,13 @@
 package com.example.demo_03.data.remote
 
+import com.example.demo_03.toast.ToastKit
 import io.ktor.client.plugins.ClientRequestException
+import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.ktor.client.plugins.RedirectResponseException
 import io.ktor.client.plugins.ResponseException
 import io.ktor.client.plugins.ServerResponseException
-import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.ktor.http.HttpStatusCode
-import com.example.demo_03.toast.ToastKit
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -112,7 +113,11 @@ inline fun <T> safeApiCall(
             },
         )
     } catch (throwable: Throwable) {
-        emit(NetworkResult.Error(throwable.toNetworkError()))
+        when (throwable) {
+            is TimeoutCancellationException -> emit(NetworkResult.Error(NetworkError.Timeout()))
+            is CancellationException -> throw throwable
+            else -> emit(NetworkResult.Error(throwable.toNetworkError()))
+        }
     }
 }
 
@@ -186,14 +191,17 @@ fun Throwable.toNetworkError(): NetworkError {
             code = response.status.value,
             message = response.status.defaultMessage(),
         )
+
         is ClientRequestException -> NetworkError.Business(
             code = response.status.value.toString(),
             message = response.status.defaultMessage(),
         )
+
         is RedirectResponseException -> NetworkError.Network("请求被重定向，请稍后重试")
         is ResponseException -> NetworkError.Unknown(
             message = response.status.defaultMessage(),
         )
+
         else -> {
             val message = message.orEmpty()
             if (
